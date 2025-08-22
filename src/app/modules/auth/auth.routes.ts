@@ -56,8 +56,7 @@ router.delete(
 
 // Updated User
 router.patch(
-	"/update/user/:id",
-	// auth("Admin", "Administrator", "User"),
+	"/update/user/:id",validateRequest(authValidation.userRegisterUpdateSchema),
 	authControllers.updateUser
 );
 

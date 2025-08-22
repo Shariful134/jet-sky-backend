@@ -34,6 +34,40 @@ const userRegisterSchema = z.object({
   }),
 });
 
+
+const userRegisterUpdateSchema = z.object({
+  body: z.object({
+    name: z
+      .string()
+      .nonempty('Name is required')
+      .trim()
+      .optional(),
+
+    email: z
+      .string()
+      .nonempty('Email is required')
+      .email('Invalid email format')
+      .trim().optional(),
+
+    phone: z
+      .string()
+      .nonempty('Phone is required')
+      .trim().optional(),
+
+    country: z
+      .string()
+      .nonempty('Country is required')
+      .trim().optional(),
+
+    password: z
+      .string()
+      .min(6, 'Password must be at least 6 characters')
+      .trim().optional(),
+
+    role: userRoleEnum,
+  }),
+});
+
 const loginValidationschema = z.object({
   body: z.object({
     email: z.string().nonempty('Email is required'),
@@ -41,35 +75,12 @@ const loginValidationschema = z.object({
   }),
 });
 
-// const updatedTrainerValidationSchema = z.object({
-//   body: z.object({
-//     name: z
-//       .string()
-//       .nonempty('Name is required')
-//       .trim()
-//       .optional(),
-
-//     email: z
-//       .string()
-//       .nonempty('Email is required')
-//       .email('Invalid email format')
-//       .trim()
-//       .optional(),
-
-//     password: z
-//       .string()
-//       .min(6, 'Password must be at least 6 characters')
-//       .trim()
-//       .optional(),
-
-//     role: userRoleEnum.default('Trainer').optional(),
-//   }),
-// });
-
 
 
 export const authValidation = {
   userRegisterSchema,
   loginValidationschema,
+  userRegisterUpdateSchema
+  
 //   updatedTrainerValidationSchema,
 };

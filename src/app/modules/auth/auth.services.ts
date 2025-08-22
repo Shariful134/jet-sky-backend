@@ -86,8 +86,6 @@ const loginUserIntoDB = async (payload: TUserLogin) => {
 // Get Single User
 const getSingleUserIntoDB = async (id: string) => {
   const result = await User.findById(id);
-  console.log(id)
-  console.log(result)
   if (!result) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'User is not Found!');
   }
