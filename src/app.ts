@@ -1,0 +1,35 @@
+import express, { Application, Request, Response } from 'express';
+import cors from 'cors';
+import cookiePerser from 'cookie-parser';
+import router from './app/routes';
+import globalErrorHandler from './middlewares/globalErrorhandler';
+import notFound from './middlewares/notFound';
+
+const app: Application = express();
+
+export const corsOptions = {
+	origin: ["http://localhost:3000", "http://localhost:3001"],
+	methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+	allowedHeaders: ["Content-Type", "Authorization"],
+	credentials: true,
+};
+
+//middleware setup
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(cookiePerser());
+
+// Setup API routes
+app.use("/api/v1", router);
+
+app.get('/', (req: Request, res: Response) => {
+  res.send('Jet Sky Server Hello!');
+});
+
+// Error Handler
+app.use(globalErrorHandler);
+
+//Not Found
+app.use(notFound);
+
+export default app;
