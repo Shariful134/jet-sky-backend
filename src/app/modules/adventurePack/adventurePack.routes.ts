@@ -1,9 +1,6 @@
 import express from "express";
 import auth from "../../../middlewares/auth";
 import validateRequest from "../../../middlewares/ValidateRequest";
-
-import { upload } from "../../../middlewares/upload.middleware";
-import attachFileToBody from "../../../middlewares/attachedFiletoBody";
 import { adventurePackValidation } from "./adventure.Validation";
 import { adventurePackControllers } from "./adventurePack.Controllers";
 
@@ -11,7 +8,7 @@ const router = express.Router();
 
 // create AdventurePack
 router.post(
-	"/create", upload.single("image"), attachFileToBody, auth("Admin", "Administrator"),
+	"/create", auth("Admin", "Administrator"),
 	validateRequest(adventurePackValidation.adventurePackCreateSchema),
 	adventurePackControllers.createAdventurePack
 );
@@ -30,7 +27,7 @@ router.get(
 
 // update AdventurePack only admin and administrator
 router.patch(
-	"/update/:id", upload.single("image"), attachFileToBody, auth("Admin", "Administrator"),
+	"/update/:id", auth("Admin", "Administrator"),
 	validateRequest(adventurePackValidation.adventurePackUpdateSchema),
 	adventurePackControllers.updateAdventurePack
 );
