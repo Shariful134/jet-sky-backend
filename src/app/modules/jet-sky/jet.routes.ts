@@ -29,7 +29,7 @@ router.get(
 
 // update Jet only admin and administrator
 router.patch(
-	"/update/:id",auth("Admin", "Administrator"),
+	"/update/:id",  upload.single("image"), attachFileToBody, auth("Admin", "Administrator"),
 	validateRequest(jetSkyValidation.jetSkyUpdateSchema),
 	jetControllers.updateJet
 );

@@ -1,6 +1,7 @@
 import express from "express";
 import { AuthRoutes } from "../modules/auth/auth.routes";
 import { jetRoutes } from "../modules/jet-sky/jet.routes";
+import { memberShipRoutes } from "../modules/memberShip/memberShipt.routes";
 
 
 
@@ -14,6 +15,10 @@ const moduleRoutes = [
 	{
 		path: "/jet",
 		route: jetRoutes,
+	},
+	{
+		path: "/memberShip",
+		route: memberShipRoutes,
 	},
 	
 ];

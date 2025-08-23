@@ -10,7 +10,6 @@ import { JetSky } from './jet.model';
 
 // create Jet
 const createJetIntoDB = async (payload: IJetSky) => {
-    console.log(payload)
   const result = await JetSky.create(payload);
   return result
 };
