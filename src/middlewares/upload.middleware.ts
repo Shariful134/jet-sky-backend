@@ -2,7 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// storage (লোকালি save করার জন্য)
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(process.cwd(), "uploads");

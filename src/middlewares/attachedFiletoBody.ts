@@ -6,16 +6,20 @@ import cloudinary from "./cloudinary";
 const attachFileToBody = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (req.file) {
-      // Cloudinary তে upload করা
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "jetsky",
-      });
+      if (process.env.NODE_ENV === "production") {
+        // Production এ Cloudinary তে upload করবো
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "jetsky",
+        });
 
-      // Database এ এই URL save হবে
-      req.body.image = result.secure_url;
+        req.body.image = result.secure_url;
 
-      // লোকাল ফাইল ডিলিট করে দিচ্ছি (কারণ আর দরকার নেই)
-      fs.unlinkSync(req.file.path);
+        // লোকাল ফাইল ডিলিট করে দিচ্ছি
+        fs.unlinkSync(req.file.path);
+      } else {
+        // লোকালি full URL generate করবো
+        req.body.image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      }
     }
     next();
   } catch (error) {

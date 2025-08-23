@@ -5,12 +5,7 @@ import { jetServices } from './jet.services';
 
 //create
 const createJet = catchAsync(async (req, res) => {
-const { body, file } = req;
-console.log(body)
-
-  if (file) {
-    body.image = `/uploads/${file.filename}`;
-  }
+const { body } = req;
 
   const result = await jetServices.createJetIntoDB(body);
   sendResponse(res, {
@@ -19,6 +14,7 @@ console.log(body)
     message: 'Jet Created Successfully',
     data: [result],
   });
+  
 });
 
 
