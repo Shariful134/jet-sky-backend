@@ -3,6 +3,7 @@ import { AuthRoutes } from "../modules/auth/auth.routes";
 import { jetRoutes } from "../modules/jet-sky/jet.routes";
 import { memberShipRoutes } from "../modules/memberShip/memberShipt.routes";
 import { adventurePackRoutes } from "../modules/adventurePack/adventurePack.routes";
+import { rentRoutes } from "../modules/rents/rent.Routes";
 
 
 const router = express.Router();
@@ -23,6 +24,10 @@ const moduleRoutes = [
 	{
 		path: "/adventurePack",
 		route: adventurePackRoutes,
+	},
+	{
+		path: "/rent",
+		route: rentRoutes,
 	},
 	
 ];
