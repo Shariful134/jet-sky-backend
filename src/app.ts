@@ -5,6 +5,7 @@ import router from './app/routes';
 import globalErrorHandler from './middlewares/globalErrorhandler';
 import notFound from './middlewares/notFound';
 import path from "path"
+import { subscriptionControllers } from './app/modules/user/subscription.ts/subscription.Controllers';
 
 const app: Application = express();
 
@@ -23,10 +24,22 @@ app.use(cookiePerser());
 // Setup API routes
 app.use("/api/v1", router);
 
+
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Jet Sky Server Hello!');
+});
+
+
+//stripe subscription
+app.get('/subscribe', subscriptionControllers.createSubscription);
+app.get('/success', subscriptionControllers.getSuccessSubscription);
+
+app.get('/cancel', (req, res)=>{
+	res.redirect("/")
 });
 
 // Error Handler

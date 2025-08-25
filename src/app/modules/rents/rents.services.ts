@@ -6,12 +6,24 @@ import { JetSky } from '../jet-sky/jet.model';
 
 
 
+
 // create Rent
 const createRentIntoDB = async (payload: IRent) => {
     const jet_sky = await JetSky.findById(payload.jet_skyId);
 
     if (!jet_sky) {
         throw new AppError(StatusCodes.BAD_REQUEST, 'Jet_Sky is not Found!');
+    }
+
+    const hp = jet_sky?.hp
+    const modelNumber = jet_sky?.model
+
+    if( hp != payload?.hp){
+         throw new AppError(StatusCodes.BAD_REQUEST, 'HorsePower is not Match!');
+    }
+
+    if( modelNumber != payload?.model){
+         throw new AppError(StatusCodes.BAD_REQUEST, 'Jet_Sky Model is not Match!');
     }
     const result = await Rent.create(payload);
     return result
@@ -20,7 +32,7 @@ const createRentIntoDB = async (payload: IRent) => {
 
 // Get Single Rent
 const getSingleRentIntoDB = async (id: string) => {
-    const result = await Rent.findById(id);
+    const result = await Rent.findById(id).populate("jet_skyId");
     if (!result) {
         throw new AppError(StatusCodes.BAD_REQUEST, 'Rent is not Found!');
     }
@@ -29,7 +41,7 @@ const getSingleRentIntoDB = async (id: string) => {
 
 // Get All Rent
 const getAllRentIntoDB = async () => {
-    const result = await Rent.find();
+    const result = await Rent.find().populate("jet_skyId");
 
     //checking Rent is exists
     if (!result) {

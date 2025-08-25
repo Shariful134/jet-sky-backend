@@ -44,12 +44,12 @@ const getAllAdventurePackIntoDB = async () => {
 //Updated AdventurePack
 const updateAdventurePackIntoDB = async (id: string, payload: Partial<IAdventurePack>) => {
 
-  if(payload?.jet_skyId){
+  if (payload?.jet_skyId) {
     const jet_sky = await JetSky.findById(payload?.jet_skyId);
 
-  if (!jet_sky) {
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Jet_Sky is not Found!');
-  }
+    if (!jet_sky) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Jet_Sky is not Found!');
+    }
   }
 
   const result = await AdventurePack.findByIdAndUpdate(id, payload, { new: true });

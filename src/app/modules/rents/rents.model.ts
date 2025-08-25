@@ -9,7 +9,7 @@ const rentSchema = new Schema<IRent>(
             required: true,
         },
         model: { type: String, required: true },
-        hp: { type: String, required: true },
+        hp: { type: Number, required: true },
 
         price: { type: Number, required: true },
 

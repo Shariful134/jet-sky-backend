@@ -14,9 +14,9 @@ const rentCreateSchema = z.object({
 
     model: z.string().nonempty("Model is required").trim(),
 
-    hp: z.any().refine(
-      (val) => typeof val === "string",
-      { message: "hp must be a string, but received number" }
+    hp: z.number().refine(
+      (val) => typeof val === "number",
+      { message: "hp must be a number, but received string" }
     ),
 
     price: z.preprocess(
@@ -36,8 +36,8 @@ const rentUpdateSchema = z.object({
     model: z.string().trim().optional(),
 
     hp: z.string().refine(
-      (val) => typeof val === "string",
-      { message: "hp must be a string, but received number" }
+      (val) => typeof val === "number",
+      { message: "hp must be a number, but received string" }
     ).optional(),
     price: z.preprocess(
       (val) => (val !== undefined ? Number(val) : val),
