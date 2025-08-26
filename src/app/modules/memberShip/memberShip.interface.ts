@@ -1,10 +1,23 @@
 import { Types } from "mongoose";
 
 export interface IMemberShip {
-duration:number;
-ridesPerMonth:number;
-refundableDeposit:number;
-signUpFee:number;
-pricing:number;
-description:string;
+  _id?: Types.ObjectId;
+
+  name: string; // e.g., "Weekly Pass", "6-Month Package"
+
+  type: "recurring" | "onetime"; // subscription type
+
+  interval?: "day" | "week" | "month" | "year"; // only for recurring
+
+  durationInMonths?: number; // only for onetime
+
+  ridesPerMonth: number;
+
+  refundableDeposit: number;
+
+  signUpFee: number;
+
+  price: number; // renamed from pricing for clarity
+
+  description: string;
 }
