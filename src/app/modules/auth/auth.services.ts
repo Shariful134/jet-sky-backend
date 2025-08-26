@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
-
+import nodemailer from "nodemailer";
+// import crypto from "crypto";
+import bcrypt from "bcrypt";
 import { User } from './auth.model';
 
 
@@ -163,6 +165,70 @@ console.log(findUserEmail, userEmail)
   return result;
 };
 
+
+
+// forgot password service
+const forgotPassword = async (email: string) => {
+  const user = await User.findOne({ email }).select(
+  "+resetPasswordOtp +resetPasswordExpiry"
+);
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found!");
+  }
+
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Save OTP + Expiry in DB
+  user.resetPasswordOtp = otp;
+  user.resetPasswordExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
+  await user.save();
+
+  // Send OTP via email
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: config.smtp_user,
+      pass: config.smtp_pass,
+    },
+  });
+
+  await transporter.sendMail({
+    from: config.smtp_user,
+    to: user.email,
+    subject: "Reset your password",
+    text: `Your OTP is ${otp}. It will expire in 10 minutes.`,
+  });
+
+  return { email: user.email };
+};
+
+// reset password service
+const resetPassword = async (email: string, otp: string, newPassword: string) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found!");
+  }
+
+  if (
+    user.resetPasswordOtp !== otp ||
+    !user.resetPasswordExpiry ||
+    user.resetPasswordExpiry < new Date()
+  ) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Invalid or expired OTP!");
+  }
+
+  // hash password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+  user.resetPasswordOtp = undefined;
+  user.resetPasswordExpiry = undefined;
+  await user.save();
+
+  return true;
+};
+
 export const authServices = {
   registerAdminIntoDB,
   registerAdministratorIntoDB,
@@ -170,11 +236,10 @@ export const authServices = {
   loginUserIntoDB,
   getAllUserIntoDB,
   getSingleUserIntoDB,
-  // getAllAdministratorIntoDB,
-  // getSingleAdministratorIntoDB,
   deleteUserIntoDB,
-  // deleteAdministratorIntoDB,
-  updateUserIntoDB
+  updateUserIntoDB,
+  forgotPassword,
+  resetPassword
 
 };
 

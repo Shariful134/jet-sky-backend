@@ -109,6 +109,129 @@ const updateUser = catchAsync(async (req, res) => {
   });
 });
 
+// forgot password
+const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  const result = await authServices.forgotPassword(email);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Password reset OTP sent to your email",
+    data: result,
+  });
+});
+
+// reset password
+const resetPassword = catchAsync(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  const result = await authServices.resetPassword(email, otp, newPassword);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Password reset successfully",
+    data: result
+  });
+});
+
+export const authControllers = {
+  registerAdmin,
+  registerAdministrator,
+  registerUser,
+  loginUser,
+  getSingleUser,
+  getAllUser,
+  deleteUser,
+  updateUser,
+  forgotPassword,
+  resetPassword,
+};
+
+
+// //verify email token
+// const verifyEmail = catchAsync(async (req, res) => {
+//   const { email, otp, fcmToken } = req.body;
+//   const user = await authServices.verifyEmail(email, otp, fcmToken);
+//   if (!user) {
+//     throw new ApiError(400, "Invalid OTP");
+//   }
+//   res.cookie("token", user.token, { httpOnly: true });
+//   res.status(200).json({
+//     success: true,
+//     message: "Email verified successfully!",
+//     data: user,
+//   });
+// });
+
+// // change password
+// const changePassword = catchAsync(async (req, res) => {
+//   const userToken = req.headers.authorization;
+//   const { oldPassword, newPassword } = req.body;
+
+//   const result = await authServices.changePassword(
+//     userToken as string,
+//     newPassword,
+//     oldPassword
+//   );
+//   sendResponse(res, {
+//     success: true,
+//     statusCode: 201,
+//     message: "Password changed successfully",
+//     data: result,
+//   });
+// });
+
+// // forgot password
+// const forgotPassword = catchAsync(async (req, res) => {
+//   const result = await authServices.forgotPassword(req.body);
+
+//   sendResponse(res, {
+//     statusCode: StatusCodes.OK,
+//     success: true,
+//     message: "Check your email!",
+//     data: result,
+//   });
+// });
+
+// //resend otp
+// const resendOtp = catchAsync(async (req, res) => {
+//   const result = await authServices.resendOtp(req.body.email);
+
+//   sendResponse(res, {
+//     statusCode: StatusCodes.OK,
+//     success: true,
+//     message: "Check your email!",
+//     data: result,
+//   });
+// });
+
+// //verify forgot password otp
+// const verifyForgotPasswordOtp = catchAsync(
+//   async (req, res) => {
+//     const result = await authServices.verifyForgotPasswordOtp(req.body);
+
+//     sendResponse(res, {
+//       statusCode: StatusCodes.OK,
+//       success: true,
+//       message: "Now You Set Your New Password!",
+//       data: result,
+//     });
+//   }
+// );
+
+// //reset password
+// const resetPassword = catchAsync(async (req, res) => {
+//   await authServices.resetPassword(req.body);
+
+//   sendResponse(res, {
+//     statusCode: StatusCodes.OK,
+//     success: true,
+//     message: "Password Reset!",
+//     data: null,
+//   });
+// });
+
 
 // //getSingle Administrator
 // const getSingleAdministrator = catchAsync(async (req, res) => {
@@ -148,19 +271,6 @@ const updateUser = catchAsync(async (req, res) => {
 
 
 
-export const authControllers = {
-  registerAdmin,
-  registerAdministrator,
-  registerUser,
-  loginUser,
-  getSingleUser,
-  getAllUser,
-  // getSingleAdministrator,
-  // getAllAdministrator,
-  deleteUser,
-  // deleteAdministrator,
-  updateUser
-};
 
 
 

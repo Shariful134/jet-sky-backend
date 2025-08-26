@@ -14,6 +14,8 @@ export interface IUser {
   introduction?:string;
   address?:string;
   profileImage?:string;
+  resetPasswordOtp?: string;
+  resetPasswordExpiry?: Date;
   createdAt: string;
   updatedAt: string;
 }

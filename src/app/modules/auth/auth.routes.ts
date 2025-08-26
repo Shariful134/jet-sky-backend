@@ -60,6 +60,45 @@ router.patch(
 	authControllers.updateUser
 );
 
+
+// forget + reset password
+router.post(
+  "/forgot-password",
+  authControllers.forgotPassword
+);
+
+router.post(
+  "/reset-password",
+  authControllers.resetPassword
+);
+
+
+// // user logout route
+// router.post("/logout", AuthController.logoutUser);
+
+// //change password
+// router.put(
+//   "/change-password",
+//   auth(), checkBlockedStatus,
+//   AuthController.changePassword
+// );
+
+// //reset password
+// router.post("/reset-password", AuthController.resetPassword);
+
+// //forgot password
+// router.post("/forgot-password", AuthController.forgotPassword);
+
+// //resend otp
+// router.post("/resend-otp", AuthController.resendOtp);
+
+// //verify-otp
+// router.post("/verify-otp", AuthController.verifyForgotPasswordOtp);
+
+// //user verify email
+// router.post("/verify-email", AuthController.verifyEmail);
+
+
 // // getSingle Administrator
 // router.get(
 // 	"/getSingle/administrator",

@@ -11,7 +11,7 @@ export default {
   jwt_access_secret: process.env.JWT_ACCESS_SECRET,
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
 
-  base_rul:process.env.BASE_URL,
+  base_rul: process.env.BASE_URL,
 
   //CLOUDINARY 
   cloud_name: process.env.CLOUD_NAME,
@@ -19,5 +19,9 @@ export default {
   api_secret: process.env.CLOUD_API_SECRET,
 
   //stripe
-  stripe_secrete_key:process.env.STRIPE_SECRETE_KEY
+  stripe_secrete_key: process.env.STRIPE_SECRETE_KEY,
+
+  smtp_user: process.env.SMTP_USER,
+  smtp_pass: process.env.SMTP_PASS
+
 };

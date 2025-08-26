@@ -1,4 +1,4 @@
-import  {  model, Schema } from "mongoose";
+import { model, Schema } from "mongoose";
 import { IUser, UserModel } from "./auth.interface";
 import bcrypt from 'bcrypt';
 import config from "../../../config";
@@ -11,19 +11,21 @@ const userSchema = new Schema<IUser>(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true },
-    country: { type: String,required: true },
+    country: { type: String, required: true },
     password: { type: String, required: true },
     introduction: { type: String },
     address: { type: String },
     profileImage: { type: String },
     role: {
       type: String,
-      enum: ['Admin', 'Administrator','User'],
+      enum: ['Admin', 'Administrator', 'User'],
       required: true,
     },
+    resetPasswordOtp: { type: String, select: false },
+    resetPasswordExpiry: { type: Date, select: false },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 
