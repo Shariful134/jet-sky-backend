@@ -30,7 +30,10 @@
     "mongodb": "^6.18.0",
     "mongoose": "^8.17.2",
     "multer": "^2.0.2",
+<<<<<<< HEAD
     "nodemailer": "^7.0.5",
+=======
+>>>>>>> d1b56566fcfa349cad313fda13e1aa88a695f373
     "stripe": "^18.4.0",
     "typescript": "^5.9.2",
     "zod": "^3.24.2",
@@ -41,6 +44,7 @@
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/stripe": "^8.0.416",
     "ts-node-dev": "^2.0.0"
   }
 }
