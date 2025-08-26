@@ -6,11 +6,8 @@ import router from './app/routes';
 import globalErrorHandler from './middlewares/globalErrorhandler';
 import notFound from './middlewares/notFound';
 import path from "path"
-<<<<<<< HEAD
 import { subscriptionControllers } from './app/modules/user/subscription.ts/subscription.Controllers';
-=======
 import { stripeWebhook } from './utils/stripeWebhook';
->>>>>>> d1b56566fcfa349cad313fda13e1aa88a695f373
 
 const app: Application = express();
 
@@ -29,10 +26,7 @@ app.use(cookiePerser());
 // Setup API routes
 app.use("/api/v1", router);
 
-<<<<<<< HEAD
-=======
 app.post("/webhook", bodyParser.raw({ type: "application/json" }), stripeWebhook);
->>>>>>> d1b56566fcfa349cad313fda13e1aa88a695f373
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
