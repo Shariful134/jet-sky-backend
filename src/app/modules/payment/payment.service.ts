@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import { get } from "mongoose";
-import Stripe from "stripe";
 import { memberShipServices } from "../memberShip/memberShip.services";
 import { Subscription } from "./payment.model";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-08-01" as any, // bypass TS check
-});
+import config, { stripe } from "../../../config";
+import Stripe from "stripe";
 
 const createCheckoutSessionCtrl = async ({
   userId,

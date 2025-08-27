@@ -11,6 +11,8 @@ import { IUser, TUserLogin } from './auth.interface';
 import config from '../../../config';
 import { CustomJwtPayload } from '../../../interface';
 import { Request } from 'express';
+import QueryBuilder from '../../builder/QueryBuilder';
+import { IChangePassword, userSearchableFields } from './auth.constant';
 
 
 // Register Admin
@@ -21,8 +23,8 @@ const registerAdminIntoDB = async (payload: IUser) => {
   }
   const result = await User.create({ ...payload, role: "Admin" });
 
-  const { _id, name, email, phone, country, role, createdAt, updatedAt } = result;
-  return { _id, name, email, phone, country, role, createdAt, updatedAt };
+  const { _id,firstName, lastName, name, email, phone, country, role, createdAt, updatedAt } = result;
+  return { _id,firstName, lastName, name, email, phone, country, role, createdAt, updatedAt };
 };
 
 // Register Administrator 
@@ -95,15 +97,23 @@ const getSingleUserIntoDB = async (id: string) => {
 };
 
 // Get All User with administrator and without admin
-const getAllUserIntoDB = async () => {
-  const result = await User.find();
-  const users = result?.filter((user) => user.role !== "Admin")
+const getAllUserIntoDB = async (query: Record<string, unknown>) => {
+  const user = new QueryBuilder(
+    User.find(), query
+  ).search(userSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+  const result = user.modelQuery;
+
+
 
   //checking user is exists
-  if (!users) {
+  if (!result) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'User is not Found!');
   }
-  return users;
+  return result;
 };
 
 
@@ -123,7 +133,7 @@ const deleteUserIntoDB = async (id: string) => {
 //Updated User
 const updateUserIntoDB = async (id: string, payload: Partial<IUser>, req: Request) => {
   const user = await User.findById(id);
-  console.log(id)
+
 
   // checking user is exists
   if (!user) {
@@ -141,7 +151,7 @@ const updateUserIntoDB = async (id: string, payload: Partial<IUser>, req: Reques
     : authHeader;
   const findUserEmail = user?.email
 
-  console.log("Token: ", token)
+
 
 
   let decoded;
@@ -155,14 +165,87 @@ const updateUserIntoDB = async (id: string, payload: Partial<IUser>, req: Reques
   }
 
   const { userEmail, role, iat, exp } = decoded;
-console.log(findUserEmail, userEmail)
+  console.log(findUserEmail, userEmail)
 
   if (findUserEmail?.toLowerCase().trim() !== userEmail?.toLowerCase().trim()) {
-  throw new AppError(StatusCodes.UNAUTHORIZED, 'You are Unauthorized!');
-}
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'You are Unauthorized!');
+  }
 
-  const result = await User.findByIdAndUpdate({ _id: id }, payload, { new: true })
-  return result;
+  if (payload.password) {
+    payload.password = await bcrypt.hash(payload.password, Number(config.bcrypt_salt_rounds));
+  }
+
+  // update user
+  const updatedUser = await User.findByIdAndUpdate(id, payload, { new: true }).select('-password');
+
+  return updatedUser;
+};
+
+
+//Change Pasword
+const changePasswordIntoDB = async (id: string, payload: IChangePassword, req: Request) => {
+
+
+  const user = await User.findById(id);
+
+
+
+  // checking user is exists
+  if (!user) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'User is not Found!');
+  }
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, "Unauthorized - Token missing");
+  }
+
+  // if token is Bearer then do split 
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : authHeader;
+  const findUserEmail = user?.email
+
+
+
+
+  let decoded;
+  try {
+    decoded = jwt.verify(
+      token,
+      config.jwt_access_secret as string,
+    ) as CustomJwtPayload;
+  } catch (error) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized');
+  }
+
+  const { userEmail, role, iat, exp } = decoded;
+  
+
+  if (findUserEmail?.toLowerCase().trim() !== userEmail?.toLowerCase().trim()) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'You are Unauthorized!');
+  }
+
+  
+   //checking if the password is correct or uncorrect
+  if (!(await User.isPasswordMatched(payload.currentPassword, user?.password))) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'Password does not match!');
+  }
+
+  const hashedPassword = await bcrypt.hash(payload.newPassword, Number(config.bcrypt_salt_rounds));
+  // let hashedPassword
+  // if (user.password === payload.newPassword) {
+  //   hashedPassword = await bcrypt.hash(payload.currentPassword, Number(config.bcrypt_salt_rounds));
+  // }
+
+  // console.log(hashedPassword)
+  // update user
+  const updatedUser = await User.findByIdAndUpdate(id, {password:hashedPassword}, { new: true }).select('-password');
+
+
+
+
+  return updatedUser;
 };
 
 
@@ -170,8 +253,8 @@ console.log(findUserEmail, userEmail)
 // forgot password service
 const forgotPassword = async (email: string) => {
   const user = await User.findOne({ email }).select(
-  "+resetPasswordOtp +resetPasswordExpiry"
-);
+    "+resetPasswordOtp +resetPasswordExpiry"
+  );
   if (!user) {
     throw new AppError(StatusCodes.NOT_FOUND, "User not found!");
   }
@@ -239,7 +322,8 @@ export const authServices = {
   deleteUserIntoDB,
   updateUserIntoDB,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  changePasswordIntoDB,
 
 };
 

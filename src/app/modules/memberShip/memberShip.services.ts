@@ -22,6 +22,7 @@ const getSingleMemberShipIntoDB = async (id: string) => {
 
 // Get All memberShip
 const getAllMemberShipIntoDB = async () => {
+
   const result = await MemberShip.find();
   
   //checking memberShip is exists

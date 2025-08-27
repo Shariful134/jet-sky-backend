@@ -1,15 +1,14 @@
 import { Request, Response } from "express";
-import Stripe from "stripe";
 import { Subscription } from "../app/modules/payment/payment.model";
 import { MemberShip } from "../app/modules/memberShip/memberShip.model";
+import config, { stripe } from "../config";
+import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
+if (!config.stripe_secrete_key) {
   throw new Error("Missing STRIPE_SECRET_KEY in environment variables");
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-12-18" as any, // use a valid Stripe API version
-});
+
 export async function stripeWebhook(req: Request, res: Response) {
   const sig = req.headers["stripe-signature"] as string;
 
@@ -122,7 +121,7 @@ export async function stripeWebhook(req: Request, res: Response) {
         const invoice = event.data.object as Stripe.Invoice;
 
         const subscriptionId: string | null =
-          invoice.metadata?.subscriptionId ||
+          invoice.parent?.subscription_details?.metadata?.subscriptionId ||
           (typeof (invoice as any).subscription === "string" ? (invoice as any).subscription : null);
 
         if (subscriptionId) {

@@ -8,6 +8,7 @@ import notFound from './middlewares/notFound';
 import path from "path"
 import { subscriptionControllers } from './app/modules/user/subscription.ts/subscription.Controllers';
 import { stripeWebhook } from './utils/stripeWebhook';
+import config from './config';
 
 const app: Application = express();
 
@@ -31,9 +32,8 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), stripeWebhook
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 
-
 app.get('/', (req: Request, res: Response) => {
-  res.send('Jet Sky Server Hello!');
+	res.send('Jet Sky Server Hello!');
 });
 
 
@@ -41,7 +41,7 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/subscribe', subscriptionControllers.createSubscription);
 app.get('/success', subscriptionControllers.getSuccessSubscription);
 
-app.get('/cancel', (req, res)=>{
+app.get('/cancel', (req, res) => {
 	res.redirect("/")
 });
 

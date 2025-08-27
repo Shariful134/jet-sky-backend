@@ -6,6 +6,9 @@ import AppError from '../../../errors/AppError';
 
 import { IJetSky } from './jet.interface';
 import { JetSky } from './jet.model';
+import QueryBuilder from '../../builder/QueryBuilder';
+import { User } from '../auth/auth.model';
+import { jetSearchableFields } from './jet.constant';
 
 
 // create Jet
@@ -24,9 +27,32 @@ const getSingleJetIntoDB = async (id: string) => {
   return result;
 };
 
+// const getAllFacultiesFromDB = async (query: Record<string, unknown>) => {
+//   const facultyQuery = new QueryBuilder(
+//     Faculty.find().populate('academicDepartment'),
+//     query,
+//   )
+//     .search(FacultySearchableFields)
+//     .filter()
+//     .sort()
+//     .paginate()
+//     .fields();
+
+//   const result = await facultyQuery.modelQuery;
+//   return result;
+// };
+
 // Get All Jet
-const getAllJetIntoDB = async () => {
-  const result = await JetSky.find();
+const getAllJetIntoDB = async (query: Record<string, unknown>) => {
+
+  const jet_SkyQuery =  new QueryBuilder(
+    JetSky.find(), query
+  ).search(jetSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+  const result = jet_SkyQuery.modelQuery;
   
   //checking jet is exists
   if (!result) {

@@ -5,6 +5,8 @@ import { authValidation } from "./auth.validation";
 import { authControllers } from "./auth.controllers";
 import auth from "../../../middlewares/auth";
 import validateRequest from "../../../middlewares/ValidateRequest";
+import attachFileToBody from "../../../middlewares/attachedFiletoBody";
+import { upload } from "../../../middlewares/upload.middleware";
 
 const router = express.Router();
 
@@ -56,8 +58,14 @@ router.delete(
 
 // Updated User
 router.patch(
-	"/update/user/:id",validateRequest(authValidation.userRegisterUpdateSchema),
+	"/update/user/:id",upload.single("image"), attachFileToBody, validateRequest(authValidation.userRegisterUpdateSchema),
 	authControllers.updateUser
+);
+
+// Changes User Password
+router.patch(
+	"/changePassword/:id",
+	authControllers.changeUserPassword
 );
 
 

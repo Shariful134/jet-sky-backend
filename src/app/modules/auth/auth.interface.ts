@@ -8,12 +8,13 @@ export interface IUser {
   name: string;
   email: string;
   phone:string;
-  country:string;
+  drivingLicense?:string;
+  country?:string;
   role: 'Admin' | 'Administrator' | 'User';
   password: string;
   introduction?:string;
   address?:string;
-  profileImage?:string;
+  image?:string;
   resetPasswordOtp?: string;
   resetPasswordExpiry?: Date;
   createdAt: string;
@@ -26,6 +27,7 @@ export type TUserLogin = {
   password: string;
 };
 
+
 //create statick method for using  model
 export interface UserModel extends Model<IUser> {
   isUserExistsByEmail(email: string): Promise<IUser>;
@@ -36,3 +38,5 @@ export interface UserModel extends Model<IUser> {
 }
 
 export type TUserRole = keyof typeof USER_ROLE;
+
+

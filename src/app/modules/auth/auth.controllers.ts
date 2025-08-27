@@ -75,7 +75,7 @@ const getSingleUser = catchAsync(async (req, res) => {
 
 //getAll User
 const getAllUser = catchAsync(async (req, res) => {
-  const result = await authServices.getAllUserIntoDB();
+  const result = await authServices.getAllUserIntoDB(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -105,6 +105,19 @@ const updateUser = catchAsync(async (req, res) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'User updated Successfully',
+    data: result,
+  });
+});
+
+// ChangePassword
+const changeUserPassword = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await authServices.changePasswordIntoDB(id, req.body, req);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Password Changed Successfully',
     data: result,
   });
 });
@@ -146,6 +159,7 @@ export const authControllers = {
   updateUser,
   forgotPassword,
   resetPassword,
+  changeUserPassword,
 };
 
 

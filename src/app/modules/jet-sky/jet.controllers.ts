@@ -2,10 +2,14 @@ import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { jetServices } from './jet.services';
+import { createLanguageService } from 'typescript';
 
 //create
 const createJet = catchAsync(async (req, res) => {
 const { body } = req;
+
+
+console.log(body,'checking body data ==========>')
 
   const result = await jetServices.createJetIntoDB(body);
   sendResponse(res, {
@@ -32,7 +36,7 @@ const getSingleJet = catchAsync(async (req, res) => {
 
 //getAll Jet
 const getAllJet = catchAsync(async (req, res) => {
-  const result = await jetServices.getAllJetIntoDB();
+  const result = await jetServices.getAllJetIntoDB(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,

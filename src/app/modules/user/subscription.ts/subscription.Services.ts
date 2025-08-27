@@ -1,9 +1,8 @@
 import { Request } from "express";
 import AppError from "../../../../errors/AppError";
 import { StatusCodes } from "http-status-codes";
-import config from "../../../../config";
+import config, { stripe } from "../../../../config";
 
-const stripe = require("stripe")(process.env.STRIPE_SECRETE_KEY);
 
 // create Subscription
 const createSubscriptionIntoDB = async (req: Request) => {
@@ -20,6 +19,9 @@ const createSubscriptionIntoDB = async (req: Request) => {
         case "starter":
             priceId = "price_1S05scFe9eL9ytjz8AUv7Z1g";
             break;
+        case "pro":
+            priceId = "price_1S0lirFe9eL9ytjzMIjJBF5z";
+            break;
 
         default:
             throw new AppError(StatusCodes.BAD_REQUEST, "Invalid plan!");
@@ -33,17 +35,21 @@ const createSubscriptionIntoDB = async (req: Request) => {
                 quantity: 1,
             },
         ],
+        metadata:{},
+        subscription_data:{
+            metadata:{}
+        },
         success_url: `${config.base_rul}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${config.base_rul}/cancel`,
     });
-    console.log(session)
-    return session;
+   
+    return {url_Link:session.url};
 };
 
 const getSuccessSubscriptionIntoDB = async (req: Request) => {
 
-    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-    console.log("get_Success: ",session)
+    const session = await stripe.checkout.sessions.retrieve(req.query.session_id as string, {expand:["subscription", "subscription.plan.product"]} );
+    console.log("get_Success Session: ",JSON.stringify(session))
     return "Subscribed";
 };
 
