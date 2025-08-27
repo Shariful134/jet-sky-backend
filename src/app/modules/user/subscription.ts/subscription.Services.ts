@@ -26,28 +26,25 @@ const createSubscriptionIntoDB = async (req: Request) => {
         intervalCount: 1
     }
 
+
     const user = {
        email: "masdfsdf@gmail.com",
        customerId: "cus_LzYwMj9dM2mK2s"
     }
 
 
-
-
   const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
             {
-                price: subscriptionData.planId,
+                price: "price_1S05scFe9eL9ytjz8AUv7Z1g",
                 quantity: subscriptionData.intervalCount,
             },
         ],
         mode: "subscription",
-        customer: user.customerId,
         success_url: "http://localhost:3000/subscription/success",
         cancel_url: "http://localhost:3000/subscription/cancel",
         customer_email: user.email,
-        client_reference_id: user.customerId,
         subscription_data:{
                 metadata:{
                     planId: subscriptionData.planId,
