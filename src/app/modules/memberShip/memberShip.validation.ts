@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Create MemberShip Schema
 const memberShipCreateSchema = z.object({
+  
   body: z.object({
     duration: z.preprocess(
       (val) => Number(val),
