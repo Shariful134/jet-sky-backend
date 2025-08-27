@@ -129,14 +129,14 @@ const createCheckoutSessionCtrl = async ({
       },
     });
 
-    return {
-      message: "Checkout session created",
-      status: 200,
-      sessionUrl: session.url,
-    };
+    return session.url;
   } catch (error) {
     // If Stripe session creation fails, remove the pending subscription
     await Subscription.findByIdAndDelete(sub._id);
     throw error;
   }
+};
+
+export const paymentServices = {
+  createCheckoutSessionCtrl,
 };
