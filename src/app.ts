@@ -9,6 +9,7 @@ import path from "path"
 import { subscriptionControllers } from './app/modules/user/subscription.ts/subscription.Controllers';
 import { stripeWebhook } from './utils/stripeWebhook';
 import config from './config';
+import { webhookController } from './app/modules/webhook/webhoo.controller';
 
 const app: Application = express();
 
@@ -19,6 +20,8 @@ export const corsOptions = {
 	credentials: true,
 };
 
+app.post("/webhook", bodyParser.raw({ type: "application/json" }), webhookController);
+
 //middleware setup
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -27,7 +30,7 @@ app.use(cookiePerser());
 // Setup API routes
 app.use("/api/v1", router);
 
-app.post("/webhook", bodyParser.raw({ type: "application/json" }), stripeWebhook);
+
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -38,7 +41,7 @@ app.get('/', (req: Request, res: Response) => {
 
 
 //stripe subscription
-app.get('/subscribe', subscriptionControllers.createSubscription);
+app.post('/subscribe', subscriptionControllers.createSubscription);
 app.get('/success', subscriptionControllers.getSuccessSubscription);
 
 app.get('/cancel', (req, res) => {

@@ -1,49 +1,73 @@
 import { Request } from "express";
 import AppError from "../../../../errors/AppError";
 import { StatusCodes } from "http-status-codes";
-import config, { stripe } from "../../../../config";
+import { MemberShip } from "../../memberShip/memberShip.model";
+import Stripe from "stripe";
 
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+//   ServerApiVersion: ""
+});
 
 // create Subscription
 const createSubscriptionIntoDB = async (req: Request) => {
-    const plan = req.query.plan;
-    console.log(plan)
+    const plan = req.query.planId;
 
-    if (!plan || typeof plan !== "string") {
-        throw new AppError(StatusCodes.BAD_REQUEST, "Subscription not Found!");
-    }
-    //link= "/subscribe?plan=starter"
-    let priceId: string | undefined;
+    // const subscriptionData = MemberShip.findById(req.params.id);
 
-    switch (plan.toLowerCase()) {
-        case "starter":
-            priceId = "price_1S05scFe9eL9ytjz8AUv7Z1g";
-            break;
-        case "pro":
-            priceId = "price_1S0lirFe9eL9ytjzMIjJBF5z";
-            break;
-
-        default:
-            throw new AppError(StatusCodes.BAD_REQUEST, "Invalid plan!");
+    // const subscription = req.query.subscriptionData;
+    const subscriptionData = {
+        planName: "pro",
+        price: 34,
+        currency: "USD",
+        interval: "month",
+        featuresList: ["Feature 1", "Feature 2", "Feature 3"],
+        planId: "price_1S0lirFe9eL9ytjzMIjJBF5z",
+        intervalCount: 1
     }
 
-    const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
+    const user = {
+       email: "masdfsdf@gmail.com",
+       customerId: "cus_LzYwMj9dM2mK2s"
+    }
+
+
+
+
+  const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
         line_items: [
             {
-                price: priceId,
-                quantity: 1,
+                price: subscriptionData.planId,
+                quantity: subscriptionData.intervalCount,
             },
         ],
-        metadata:{},
+        mode: "subscription",
+        customer: user.customerId,
+        success_url: "http://localhost:3000/subscription/success",
+        cancel_url: "http://localhost:3000/subscription/cancel",
+        customer_email: user.email,
+        client_reference_id: user.customerId,
         subscription_data:{
-            metadata:{}
+                metadata:{
+                    planId: subscriptionData.planId,
+                    planName: subscriptionData.planName,
+                    price: subscriptionData.price,
+                    currency: subscriptionData.currency,
+                    interval: subscriptionData.interval
+                }
         },
-        success_url: `${config.base_rul}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${config.base_rul}/cancel`,
+        metadata:{
+             planId: subscriptionData.planId,
+             planName: subscriptionData.planName,
+             price: subscriptionData.price,
+             currency: subscriptionData.currency,
+             interval: subscriptionData.interval,
+        }
+     
     });
-   
-    return {url_Link:session.url};
+
+    return { url_Link: session.url };
 };
 
 const getSuccessSubscriptionIntoDB = async (req: Request) => {
