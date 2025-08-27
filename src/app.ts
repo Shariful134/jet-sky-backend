@@ -40,6 +40,9 @@ app.get('/', (req: Request, res: Response) => {
 //stripe subscription
 app.get('/subscribe', subscriptionControllers.createSubscription);
 app.get('/success', subscriptionControllers.getSuccessSubscription);
+app.get('/customers/:customerId', subscriptionControllers.getPortalSubscription);
+
+
 
 app.get('/cancel', (req, res) => {
 	res.redirect("/")

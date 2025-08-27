@@ -14,7 +14,7 @@ const adventurePackSchema = new Schema<IAdventurePack>(
     ridesPricing5: { type: Number, required: true },
     ridesPricing8: { type: Number, required: true },
     refundAmount: { type: Number, required: true },
-    feature_list: { type: [String], default: [] }
+    feature_list: { type: [String], default: [] , required: false  }
     
   },
   { timestamps: true }

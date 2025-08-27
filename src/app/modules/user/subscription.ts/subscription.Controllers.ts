@@ -28,7 +28,20 @@ const getSuccessSubscription = catchAsync(async (req, res) => {
   });
 });
 
+const getPortalSubscription = catchAsync(async (req, res) => {
+ 
+  const result = await subscriptionServices.getportalSubscriptionIntoDB(req);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "portal Successfully",
+    data: [result],
+  });
+});
+
 export const subscriptionControllers = {
   createSubscription,
-  getSuccessSubscription
+  getSuccessSubscription,
+  getPortalSubscription,
 };

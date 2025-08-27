@@ -8,5 +8,5 @@ ridesPricing3:number;
 ridesPricing5:number;
 ridesPricing8:number;
 refundAmount:number;
-feature_list:string[]
+feature_list?:string[]
 }

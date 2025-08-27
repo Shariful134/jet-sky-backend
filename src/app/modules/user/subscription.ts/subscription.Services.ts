@@ -53,6 +53,17 @@ const getSuccessSubscriptionIntoDB = async (req: Request) => {
     return "Subscribed";
 };
 
+//portamsession
+const getportalSubscriptionIntoDB = async (req: Request) => {
+
+const portalSession = await stripe.billingPortal.sessions.create({
+    customer:req.params.customerId,
+    return_url:`${config.base_rul}/`
+    
+})
+console.log(portalSession)
+};
+
 // const cancelSubscriptionIntoDB = async (req: Request) => {
 
 //   const session = await stripe.checkout.sessions.create(req.query.session_id);
@@ -62,5 +73,6 @@ const getSuccessSubscriptionIntoDB = async (req: Request) => {
 
 export const subscriptionServices = {
     createSubscriptionIntoDB,
-    getSuccessSubscriptionIntoDB
+    getSuccessSubscriptionIntoDB,
+    getportalSubscriptionIntoDB
 };
