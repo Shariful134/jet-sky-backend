@@ -3,7 +3,7 @@ import path from 'path';
 import Stripe from 'stripe';
 
 dotenv.config({ path: path.join(process.cwd(), '.env') });
- export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY||"sk_test_51S05eEFe9eL9ytjzPkANCNekgF8pBeiME85QmUCUpM6B32KvDPVFo71BvYW7pZBw8N7n0YQNCdJEfjPrE8NyhwSZ00s93KKaQf")
+ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string) 
 export default {
   port: process.env.PORT,
   database_url: process.env.DATABASE_URL,
