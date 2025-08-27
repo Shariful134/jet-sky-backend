@@ -14,7 +14,7 @@ const createPaymentCtrl = async (req: Request, res: Response) => {
 
     if (result.status && result.status !== 200) {
       sendResponse(res, {
-        statusCode: result.status,
+        statusCode: st,
         success: false,
         message: result.message,
         data: null,
