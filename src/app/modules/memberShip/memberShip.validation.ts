@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Create MemberShip Schema
 const memberShipCreateSchema = z.object({
-  
+
   body: z.object({
     durationInMonths: z.preprocess(
       (val) => Number(val),
@@ -17,7 +17,7 @@ const memberShipCreateSchema = z.object({
       z.number({
         required_error: "Rides per month is required",
         invalid_type_error: "Rides per month must be a number",
-      }).positive("Rides per month must be greater than 0")
+      }).positive("Rides per month must be greater than 0").max(5, "Rides per month cannot be more than 5")
     ),
 
     refundableDeposit: z.preprocess(
@@ -69,7 +69,7 @@ const memberShipUpdateSchema = z.object({
 
     refundableDeposit: z.preprocess(
       (val) => (val !== undefined ? Number(val) : val),
-      z.number().nonnegative("Refundable deposit cannot be negative")
+      z.number().nonnegative("Refundable deposit cannot be negative").max(5, "Rides per month cannot be more than 5")
     ).optional(),
 
     signUpFee: z.preprocess(

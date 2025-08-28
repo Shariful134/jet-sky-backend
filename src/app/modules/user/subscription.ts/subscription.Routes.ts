@@ -1,15 +1,19 @@
-// import express from "express";
-// import auth from "../../../../middlewares/auth";
-// import { subscriptionControllers } from "./subscription.Controllers";
+import express from "express";
+import { subscriptionControllers } from "./subscription.Controllers";
 
-// const router = express.Router();
+const router = express.Router();
 
-// // create subscription
-// router.get(
-// 	"/subscribe",
-//     // auth("Admin", "Administrator","User"),
-// 	subscriptionControllers.createSubscription
-// );
+// getSingle subscription
+router.get(
+	"/get/:id",
+	subscriptionControllers.getSingleSubscription
+);
 
-// export const subscriptionRoutes = router;
+// get All subscription
+router.get(
+	"/get",
+	subscriptionControllers.getAllSubscription
+);
+
+export const subscriptionShipRoutes = router;
 

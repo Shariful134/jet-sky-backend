@@ -6,11 +6,11 @@ import Stripe from "stripe";
 import config from "../../../../config";
 import { CustomJwtPayload } from "../../../../interface";
 import jwt from 'jsonwebtoken';
-import { IMemberShip } from "../../memberShip/memberShip.interface";
+import { Subscription } from "./subscription.Model";
 
 type MembershipPlan = {
     _id: string;
-    duration: number;
+    durationInMonths: number;
     ridesPerMonth: number;
     refundableDeposit: number;
     signUpFee: number;
@@ -32,6 +32,7 @@ const createSubscriptionIntoDB = async (req: Request) => {
 
     const memberShipData = await MemberShip.findById(req?.body?.memberShipPlanId) as MembershipPlan
 
+    
     if (!memberShipData) {
         throw new AppError(StatusCodes.BAD_REQUEST, "MemberShip is not found!");
     }
@@ -66,6 +67,21 @@ const createSubscriptionIntoDB = async (req: Request) => {
     // const subscriptionData = MemberShip.findById(req.params.id);
 
     // const subscription = req.query.subscriptionData;
+
+    const planMapping: Record<number, string> = {
+        24: config.planId_24 as string,
+        12: config.planId_12 as string,
+        6: config.planId_6 as string
+    };
+
+    
+    const duration = memberShipData?.durationInMonths;
+    const planId = planMapping[duration] || "default-plan";
+
+    console.log(planId, "PlanId:========>")
+    console.log(memberShipData?.durationInMonths, "MemberShip durationInMonths:========>")
+
+    memberShipData?.durationInMonths
     const subscriptionData = {
         userId: decoded?.id,
         memberShipPlanId: req?.body?.memberShipPlanId,
@@ -76,7 +92,7 @@ const createSubscriptionIntoDB = async (req: Request) => {
         currency: "USD",
         interval: "monthy",
         featuresList: ["Feature 1", "Feature 2", "Feature 3"],
-        planId: "price_1S0lirFe9eL9ytjzMIjJBF5z",
+        planId: planId,
         intervalCount: 1
     }
 
@@ -92,11 +108,11 @@ const createSubscriptionIntoDB = async (req: Request) => {
         payment_method_types: ['card'],
         line_items: [
             {
-                price: "price_1S05scFe9eL9ytjz8AUv7Z1g",
+                price: planId,
                 quantity: subscriptionData.intervalCount,
             },
         ],
-        
+
         mode: "subscription",
         success_url: "http://localhost:3000/subscription/success",
         cancel_url: "http://localhost:3000/subscription/cancel",
@@ -108,7 +124,7 @@ const createSubscriptionIntoDB = async (req: Request) => {
                 price: subscriptionData.price,
                 currency: subscriptionData.currency,
                 interval: 24
-                
+
             }
         },
         metadata: {
@@ -129,33 +145,33 @@ const createSubscriptionIntoDB = async (req: Request) => {
     return { url_Link: session.url };
 };
 
-// const getSuccessSubscriptionIntoDB = async (req: Request) => {
 
-//     const session = await stripe.checkout.sessions.retrieve(req.query.session_id as string, {expand:["subscription", "subscription.plan.product"]} );
-//     console.log("get_Success Session: ",JSON.stringify(session))
-//     return "Subscribed";
-// };
+// Get Single Subscription
+const getSingleSubscriptionIntoDB = async (id: string) => {
+  const result = await Subscription.findById(id).populate("membershipId").populate("userId");
+  if (!result) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Subscription is not Found!');
+  }
+  return result;
+};
 
-// //portamsession
-// const getportalSubscriptionIntoDB = async (req: Request) => {
+// Get All Subscription
+const getAllSubscriptionIntoDB = async () => {
 
-// const portalSession = await stripe.billingPortal.sessions.create({
-//     customer:req.params.customerId,
-//     return_url:`${config.base_rul}/`
+  const result = await Subscription.find().populate("membershipId").populate("userId");
 
-// })
-// console.log(portalSession)
-// };
+  //checking memberShip is exists
+  if (!result) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Subscription is not Found!');
+  }
+  return result;
+};
 
-// const cancelSubscriptionIntoDB = async (req: Request) => {
-
-//   const session = await stripe.checkout.sessions.create(req.query.session_id);
-//   console.log(session)
-//   return "Subscribed";
-// };
 
 export const subscriptionServices = {
     createSubscriptionIntoDB,
+    getSingleSubscriptionIntoDB,
+    getAllSubscriptionIntoDB,
     // getSuccessSubscriptionIntoDB,
     // getportalSubscriptionIntoDB
 };

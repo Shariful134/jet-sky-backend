@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import { Subscription } from "../user/subscription.ts/subscription.Model";
+import { MemberShip } from "../memberShip/memberShip.model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! as string, {
   // apiVersion: "2025-01-27",
@@ -27,6 +28,9 @@ export const webhookController = async (req: Request, res: Response) => {
         const membershipId = session.metadata?.memberShipPlanId;
 
         if (session.subscription && userId && membershipId) {
+
+          const memberShipData= await MemberShip.findById(membershipId)
+
           const startDate = new Date();
           let endDate: Date;
 
@@ -50,8 +54,8 @@ export const webhookController = async (req: Request, res: Response) => {
             status: "active",
             startDate,
             endDate,
-            signUpFeePaid: false,
-            refundableDepositPaid: false,
+            signUpFeePaid: memberShipData?.signUpFee,
+            refundableDepositPaid: memberShipData?.refundableDeposit,
             refundAmount: 0,
             damagesDeducted: 0,
           });

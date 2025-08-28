@@ -5,7 +5,7 @@ import { subscriptionServices } from "./subscription.Services";
 
 // create subscription
 const createSubscription = catchAsync(async (req, res) => {
-    // console.log(req)
+
   const result = await subscriptionServices.createSubscriptionIntoDB(req);
 
   sendResponse(res, {
@@ -16,32 +16,35 @@ const createSubscription = catchAsync(async (req, res) => {
   });
 });
 
-// const getSuccessSubscription = catchAsync(async (req, res) => {
+const getSingleSubscription = catchAsync(async (req, res) => {
  
-//   const result = await subscriptionServices.getSuccessSubscriptionIntoDB(req);
+  const {id} = req.params
+  const result = await subscriptionServices.getSingleSubscriptionIntoDB(id);
 
-//   sendResponse(res, {
-//     statusCode: StatusCodes.OK,
-//     success: true,
-//     message: "Subsribe Successfully",
-//     data: [result],
-//   });
-// });
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Subsribtion Retirived Successfully",
+    data: [result],
+  });
+});
 
-// const getPortalSubscription = catchAsync(async (req, res) => {
+const getAllSubscription = catchAsync(async (req, res) => {
  
-//   const result = await subscriptionServices.getportalSubscriptionIntoDB(req);
+  const result = await subscriptionServices.getAllSubscriptionIntoDB();
 
-//   sendResponse(res, {
-//     statusCode: StatusCodes.OK,
-//     success: true,
-//     message: "portal Successfully",
-//     data: [result],
-//   });
-// });
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Subsribtion Retrieved Successfully",
+    data: [result],
+  });
+});
 
 export const subscriptionControllers = {
   createSubscription,
+  getSingleSubscription,
+  getAllSubscription,
   // getSuccessSubscription,
   // getPortalSubscription,
 };

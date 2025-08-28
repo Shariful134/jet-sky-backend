@@ -23,6 +23,11 @@ export default {
   stripe_secrete_key: process.env.STRIPE_SECRET_KEY,
 
   smtp_user: process.env.SMTP_USER,
-  smtp_pass: process.env.SMTP_PASS
+  smtp_pass: process.env.SMTP_PASS,
+
+  planId_24:process.env.PLANID_24,
+  planId_12:process.env.PLANID_12,
+  planId_6:process.env.PLANID_6,
+
 
 };

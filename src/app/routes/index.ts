@@ -5,6 +5,7 @@ import { memberShipRoutes } from "../modules/memberShip/memberShipt.routes";
 import { adventurePackRoutes } from "../modules/adventurePack/adventurePack.routes";
 import { rentRoutes } from "../modules/rents/rent.Routes";
 import { paymentRoute } from "../modules/payment/payment.route";
+import { subscriptionShipRoutes } from "../modules/user/subscription.ts/subscription.Routes";
 
 
 const router = express.Router();
@@ -33,6 +34,10 @@ const moduleRoutes = [
 	{
 		path: "/payment",
 		route: paymentRoute,
+	},
+	{
+		path: "/subscription",
+		route: subscriptionShipRoutes,
 	}
 	
 ];
