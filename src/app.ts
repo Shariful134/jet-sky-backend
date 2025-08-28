@@ -10,6 +10,7 @@ import { subscriptionControllers } from './app/modules/user/subscription.ts/subs
 import { stripeWebhook } from './utils/stripeWebhook';
 import config from './config';
 import { webhookController } from './app/modules/webhook/webhoo.controller';
+import auth from './middlewares/auth';
 
 const app: Application = express();
 
@@ -20,12 +21,15 @@ export const corsOptions = {
 	credentials: true,
 };
 
-app.post("/webhook", bodyParser.raw({ type: "application/json" }), webhookController);
+
+app.post("/webhooks", bodyParser.raw({ type: "application/json" }), webhookController);
 
 //middleware setup
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookiePerser());
+
+
 
 // Setup API routes
 app.use("/api/v1", router);
@@ -41,9 +45,9 @@ app.get('/', (req: Request, res: Response) => {
 
 
 //stripe subscription
-app.post('/subscribe', subscriptionControllers.createSubscription);
-app.get('/success', subscriptionControllers.getSuccessSubscription);
-app.get('/customers/:customerId', subscriptionControllers.getPortalSubscription);
+app.post('/subscribe', auth("User"), subscriptionControllers.createSubscription);
+// app.get('/success', subscriptionControllers.getSuccessSubscription);
+// app.get('/customers/:customerId', subscriptionControllers.getPortalSubscription);
 
 
 

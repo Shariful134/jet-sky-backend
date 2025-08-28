@@ -9,6 +9,8 @@ const auth_validation_1 = require("./auth.validation");
 const auth_controllers_1 = require("./auth.controllers");
 const auth_1 = __importDefault(require("../../../middlewares/auth"));
 const ValidateRequest_1 = __importDefault(require("../../../middlewares/ValidateRequest"));
+const attachedFiletoBody_1 = __importDefault(require("../../../middlewares/attachedFiletoBody"));
+const upload_middleware_1 = require("../../../middlewares/upload.middleware");
 const router = express_1.default.Router();
 // Admin register
 router.post("/admin/register", (0, ValidateRequest_1.default)(auth_validation_1.authValidation.userRegisterSchema), auth_controllers_1.authControllers.registerAdmin);
@@ -25,7 +27,9 @@ router.get("/getAll/user", auth_controllers_1.authControllers.getAllUser);
 // delete User
 router.delete("/delete/user/:id", (0, auth_1.default)("Admin", "Administrator"), auth_controllers_1.authControllers.deleteUser);
 // Updated User
-router.patch("/update/user/:id", (0, ValidateRequest_1.default)(auth_validation_1.authValidation.userRegisterUpdateSchema), auth_controllers_1.authControllers.updateUser);
+router.patch("/update/user/:id", upload_middleware_1.upload.single("image"), attachedFiletoBody_1.default, (0, ValidateRequest_1.default)(auth_validation_1.authValidation.userRegisterUpdateSchema), auth_controllers_1.authControllers.updateUser);
+// Changes User Password
+router.patch("/changePassword/:id", auth_controllers_1.authControllers.changeUserPassword);
 // forget + reset password
 router.post("/forgot-password", auth_controllers_1.authControllers.forgotPassword);
 router.post("/reset-password", auth_controllers_1.authControllers.resetPassword);

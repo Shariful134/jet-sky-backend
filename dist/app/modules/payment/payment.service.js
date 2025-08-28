@@ -8,128 +8,48 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const stripe_1 = __importDefault(require("stripe"));
-const memberShip_services_1 = require("../memberShip/memberShip.services");
-const payment_model_1 = require("./payment.model");
-const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-08-01", // bypass TS check
-});
-const createCheckoutSessionCtrl = (_a) => __awaiter(void 0, [_a], void 0, function* ({ userId, memberShipId, }) {
-    const memberShip = yield memberShip_services_1.memberShipServices.getSingleMemberShipIntoDB(memberShipId);
-    if (!memberShip) {
-        return {
-            message: "MemberShip not found",
-            status: 404,
-        };
-    }
-    // Extract values safely from schema
-    const durationMonths = memberShip.durationInMonths || 1;
-    const signUpFee = memberShip.signUpFee || 0;
-    const refundableDeposit = memberShip.refundableDeposit || 0;
-    // 1️⃣ Calculate subscription dates
-    const now = new Date();
-    const endDate = new Date(now);
-    if (memberShip.type === "recurring") {
-        // If weekly, monthly, yearly → use interval from schema
-        switch (memberShip.interval) {
-            case "day":
-                endDate.setDate(endDate.getDate() + 1);
-                break;
-            case "week":
-                endDate.setDate(endDate.getDate() + 7);
-                break;
-            case "month":
-                endDate.setMonth(endDate.getMonth() + 1);
-                break;
-            case "year":
-                endDate.setFullYear(endDate.getFullYear() + 1);
-                break;
-            default:
-                endDate.setDate(endDate.getDate() + 7); // fallback: 1 week
-        }
-    }
-    else {
-        // One-time plan → extend by durationInMonths
-        endDate.setMonth(endDate.getMonth() + durationMonths);
-    }
-    // 2️⃣ Create pending subscription in DB
-    const sub = yield payment_model_1.Subscription.create({
-        userId,
-        memberShipId,
-        type: memberShip.type,
-        status: "pending",
-        startDate: now,
-        endDate,
-        signUpFeePaid: false,
-        refundableDepositPaid: false,
+exports.paymentServices = void 0;
+const config_1 = require("../../../config"); // must be initialized Stripe
+const createCheckoutSessionPayment = (userId, memberShipId) => __awaiter(void 0, void 0, void 0, function* () {
+    // // 1️⃣ Fetch membership details from DB
+    // const memberShip = await memberShipServices.getSingleMemberShipIntoDB(
+    //   memberShipId
+    // );
+    // if (!memberShip) {
+    //   throw new Error("Membership not found");
+    // }
+    // 2️⃣ Create Stripe Checkout Session
+    const session = yield config_1.stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: [
+            {
+                price_data: {
+                    currency: "usd",
+                    product_data: {
+                        name: "Membership Plan",
+                        description: "One-time membership",
+                    },
+                    unit_amount: 345 * 100,
+                },
+                quantity: 1,
+            },
+        ],
+        success_url: `${process.env.FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`,
+        metadata: {
+            userId,
+            memberShipId,
+            fakeValue: "test-metadata-123",
+        },
     });
-    try {
-        // 3️⃣ Build Stripe line items
-        const lineItems = [];
-        // Membership base price
-        lineItems.push({
-            price_data: {
-                currency: "usd",
-                product_data: {
-                    name: memberShip.name,
-                    description: memberShip.description,
-                },
-                unit_amount: memberShip.price * 100,
-                recurring: memberShip.type === "recurring"
-                    ? { interval: memberShip.interval || "week" } // from schema
-                    : undefined,
-            },
-            quantity: 1,
-        });
-        // Sign-up fee (if any)
-        if (signUpFee > 0) {
-            lineItems.push({
-                price_data: {
-                    currency: "usd",
-                    product_data: { name: "Sign-Up Fee" },
-                    unit_amount: signUpFee * 100,
-                },
-                quantity: 1,
-            });
-        }
-        // Refundable deposit (if any)
-        if (refundableDeposit > 0) {
-            lineItems.push({
-                price_data: {
-                    currency: "usd",
-                    product_data: { name: "Refundable Deposit" },
-                    unit_amount: refundableDeposit * 100,
-                },
-                quantity: 1,
-            });
-        }
-        // 4️⃣ Create Stripe Checkout Session
-        const session = yield stripe.checkout.sessions.create({
-            mode: memberShip.type === "recurring" ? "subscription" : "payment",
-            payment_method_types: ["card"],
-            line_items: lineItems,
-            success_url: `${process.env.FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`,
-            metadata: {
-                subscriptionId: sub._id.toString(),
-                type: memberShip.type,
-                interval: memberShip.interval || "",
-                durationMonths: durationMonths.toString(),
-            },
-        });
-        return {
-            message: "Checkout session created",
-            status: 200,
-            sessionUrl: session.url,
-        };
-    }
-    catch (error) {
-        // If Stripe session creation fails, remove the pending subscription
-        yield payment_model_1.Subscription.findByIdAndDelete(sub._id);
-        throw error;
-    }
+    return {
+        message: "Checkout session created",
+        sessionUrl: session.url,
+    };
 });
+// add more  service here
+exports.paymentServices = {
+    createCheckoutSessionPayment,
+    // input the 
+};

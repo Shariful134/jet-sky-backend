@@ -14,6 +14,6 @@ const adventurePackSchema = new mongoose_1.Schema({
     ridesPricing5: { type: Number, required: true },
     ridesPricing8: { type: Number, required: true },
     refundAmount: { type: Number, required: true },
-    feature_list: { type: [String], default: [] }
+    feature_list: { type: [String], default: [], required: false }
 }, { timestamps: true });
 exports.AdventurePack = (0, mongoose_1.model)('AdventurePack', adventurePackSchema);

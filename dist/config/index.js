@@ -3,9 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.stripe = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
+const stripe_1 = __importDefault(require("stripe"));
 dotenv_1.default.config({ path: path_1.default.join(process.cwd(), '.env') });
+exports.stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY);
 exports.default = {
     port: process.env.PORT,
     database_url: process.env.DATABASE_URL,
@@ -19,7 +22,7 @@ exports.default = {
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET,
     //stripe
-    stripe_secrete_key: process.env.STRIPE_SECRETE_KEY,
+    stripe_secrete_key: process.env.STRIPE_SECRET_KEY,
     smtp_user: process.env.SMTP_USER,
     smtp_pass: process.env.SMTP_PASS
 };

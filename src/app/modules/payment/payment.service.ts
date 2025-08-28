@@ -3,29 +3,28 @@ import { stripe } from "../../../config"; // must be initialized Stripe
 import Stripe from "stripe";
 
 
-  const createCheckoutSessionPayment = async (userId: string, memberShipId: string) => {
-    // 1️⃣ Fetch membership details from DB
-    const memberShip = await memberShipServices.getSingleMemberShipIntoDB(
-      memberShipId
-    );
+  const createCheckoutSessionPayment = async (userId: any, memberShipId: any) => {
+    // // 1️⃣ Fetch membership details from DB
+    // const memberShip = await memberShipServices.getSingleMemberShipIntoDB(
+    //   memberShipId
+    // );
 
-    if (!memberShip) {
-      throw new Error("Membership not found");
-    }
+    // if (!memberShip) {
+    //   throw new Error("Membership not found");
+    // }
 
     // 2️⃣ Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      payment_method_collection: "always", // replaces deprecated payment_method_types
       line_items: [
         {
           price_data: {
-            currency: "usd", // or your currency
+            currency: "usd", 
             product_data: {
               name:   "Membership Plan",
-              description: memberShip.description || "One-time membership",
+              description:  "One-time membership",
             },
-            unit_amount: memberShip.price * 100, // cents
+            unit_amount: 345 * 100, 
           },
           quantity: 1,
         },
@@ -35,7 +34,7 @@ import Stripe from "stripe";
       metadata: {
         userId,
         memberShipId,
-        fakeValue: "test-metadata-123", // ✅ fake metadata
+        fakeValue: "test-metadata-123",
       },
     });
 

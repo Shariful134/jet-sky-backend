@@ -16,6 +16,8 @@ exports.jetServices = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const AppError_1 = __importDefault(require("../../../errors/AppError"));
 const jet_model_1 = require("./jet.model");
+const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
+const jet_constant_1 = require("./jet.constant");
 // create Jet
 const createJetIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield jet_model_1.JetSky.create(payload);
@@ -29,9 +31,27 @@ const getSingleJetIntoDB = (id) => __awaiter(void 0, void 0, void 0, function* (
     }
     return result;
 });
+// const getAllFacultiesFromDB = async (query: Record<string, unknown>) => {
+//   const facultyQuery = new QueryBuilder(
+//     Faculty.find().populate('academicDepartment'),
+//     query,
+//   )
+//     .search(FacultySearchableFields)
+//     .filter()
+//     .sort()
+//     .paginate()
+//     .fields();
+//   const result = await facultyQuery.modelQuery;
+//   return result;
+// };
 // Get All Jet
-const getAllJetIntoDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield jet_model_1.JetSky.find();
+const getAllJetIntoDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const jet_SkyQuery = new QueryBuilder_1.default(jet_model_1.JetSky.find(), query).search(jet_constant_1.jetSearchableFields)
+        .filter()
+        .sort()
+        .paginate()
+        .fields();
+    const result = jet_SkyQuery.modelQuery;
     //checking jet is exists
     if (!result) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Jet is not Found!');

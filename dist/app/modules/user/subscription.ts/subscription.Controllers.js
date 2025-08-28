@@ -19,7 +19,7 @@ const sendResponse_1 = __importDefault(require("../../../../shared/sendResponse"
 const subscription_Services_1 = require("./subscription.Services");
 // create subscription
 const createSubscription = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(req);
+    // console.log(req)
     const result = yield subscription_Services_1.subscriptionServices.createSubscriptionIntoDB(req);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
@@ -28,16 +28,26 @@ const createSubscription = (0, catchAsync_1.default)((req, res) => __awaiter(voi
         data: [result],
     });
 }));
-const getSuccessSubscription = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield subscription_Services_1.subscriptionServices.getSuccessSubscriptionIntoDB(req);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: "Subsribe Successfully",
-        data: [result],
-    });
-}));
+// const getSuccessSubscription = catchAsync(async (req, res) => {
+//   const result = await subscriptionServices.getSuccessSubscriptionIntoDB(req);
+//   sendResponse(res, {
+//     statusCode: StatusCodes.OK,
+//     success: true,
+//     message: "Subsribe Successfully",
+//     data: [result],
+//   });
+// });
+// const getPortalSubscription = catchAsync(async (req, res) => {
+//   const result = await subscriptionServices.getportalSubscriptionIntoDB(req);
+//   sendResponse(res, {
+//     statusCode: StatusCodes.OK,
+//     success: true,
+//     message: "portal Successfully",
+//     data: [result],
+//   });
+// });
 exports.subscriptionControllers = {
     createSubscription,
-    getSuccessSubscription
+    // getSuccessSubscription,
+    // getPortalSubscription,
 };

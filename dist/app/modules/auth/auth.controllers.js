@@ -78,7 +78,7 @@ const getSingleUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
 }));
 //getAll User
 const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield auth_services_1.authServices.getAllUserIntoDB();
+    const result = yield auth_services_1.authServices.getAllUserIntoDB(req.query);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -105,6 +105,17 @@ const updateUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: 'User updated Successfully',
+        data: result,
+    });
+}));
+// ChangePassword
+const changeUserPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield auth_services_1.authServices.changePasswordIntoDB(id, req.body, req);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: 'Password Changed Successfully',
         data: result,
     });
 }));
@@ -141,6 +152,7 @@ exports.authControllers = {
     updateUser,
     forgotPassword,
     resetPassword,
+    changeUserPassword,
 };
 // //verify email token
 // const verifyEmail = catchAsync(async (req, res) => {

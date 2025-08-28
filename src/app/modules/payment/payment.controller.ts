@@ -5,14 +5,10 @@ import { paymentServices } from "./payment.service";
 
  const  createCheckoutSession = async (req: Request, res: Response) => {
     try {
-      const { userId, memberShipId } = req.body;
+      const { userId = "435983745", memberShipId = "9348534" } = req.body;
 
-      if (!userId || !memberShipId) {
-        return res.status(400).json({
-          success: false,
-          message: "userId and memberShipId are required",
-        });
-      }
+
+      console.log(userId,memberShipId,'here more  info add here')
 
       const result = await paymentServices.createCheckoutSessionPayment(
         userId,
@@ -34,5 +30,5 @@ import { paymentServices } from "./payment.service";
   }
 
   export const paymentController = {
-    createCheckoutSession,
+    createCheckoutSession
   };

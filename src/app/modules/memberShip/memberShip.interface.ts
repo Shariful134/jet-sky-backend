@@ -3,9 +3,9 @@ import { Types } from "mongoose";
 export interface IMemberShip {
   _id?: Types.ObjectId;
 
-  name: string; // e.g., "Weekly Pass", "6-Month Package"
+  name?: string; // e.g., "Weekly Pass", "6-Month Package"
 
-  type: "recurring" | "onetime"; // subscription type
+  type?: "recurring" | "onetime"; // subscription type
 
   interval?: "day" | "week" | "month" | "year"; // only for recurring
 

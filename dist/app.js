@@ -13,7 +13,8 @@ const globalErrorhandler_1 = __importDefault(require("./middlewares/globalErrorh
 const notFound_1 = __importDefault(require("./middlewares/notFound"));
 const path_1 = __importDefault(require("path"));
 const subscription_Controllers_1 = require("./app/modules/user/subscription.ts/subscription.Controllers");
-const stripeWebhook_1 = require("./utils/stripeWebhook");
+const webhoo_controller_1 = require("./app/modules/webhook/webhoo.controller");
+const auth_1 = __importDefault(require("./middlewares/auth"));
 const app = (0, express_1.default)();
 exports.corsOptions = {
     origin: ["http://localhost:3000", "http://localhost:3001"],
@@ -21,20 +22,21 @@ exports.corsOptions = {
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
 };
+app.post("/webhooks", body_parser_1.default.raw({ type: "application/json" }), webhoo_controller_1.webhookController);
 //middleware setup
 app.use((0, cors_1.default)(exports.corsOptions));
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 // Setup API routes
 app.use("/api/v1", routes_1.default);
-app.post("/webhook", body_parser_1.default.raw({ type: "application/json" }), stripeWebhook_1.stripeWebhook);
 app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
 app.get('/', (req, res) => {
     res.send('Jet Sky Server Hello!');
 });
 //stripe subscription
-app.get('/subscribe', subscription_Controllers_1.subscriptionControllers.createSubscription);
-app.get('/success', subscription_Controllers_1.subscriptionControllers.getSuccessSubscription);
+app.post('/subscribe', (0, auth_1.default)("User"), subscription_Controllers_1.subscriptionControllers.createSubscription);
+// app.get('/success', subscriptionControllers.getSuccessSubscription);
+// app.get('/customers/:customerId', subscriptionControllers.getPortalSubscription);
 app.get('/cancel', (req, res) => {
     res.redirect("/");
 });

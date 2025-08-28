@@ -8,25 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(require("fs"));
-const cloudinary_1 = __importDefault(require("./cloudinary"));
 const attachFileToBody = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.file) {
-            if (process.env.NODE_ENV === "production") {
-                const result = yield cloudinary_1.default.uploader.upload(req.file.path, {
-                    folder: "jetsky",
-                });
-                req.body.image = result.secure_url;
-                fs_1.default.unlinkSync(req.file.path);
-            }
-            else {
-                req.body.image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-            }
+            req.body.image = `${process.env.SERVER_URL}/uploads/${req.file.filename}`;
         }
         next();
     }

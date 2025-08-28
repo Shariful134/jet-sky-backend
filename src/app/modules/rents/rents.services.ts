@@ -18,12 +18,12 @@ const createRentIntoDB = async (payload: IRent) => {
     const hp = jet_sky?.hp
     const modelNumber = jet_sky?.model
 
-    if( hp != payload?.hp){
-         throw new AppError(StatusCodes.BAD_REQUEST, 'HorsePower is not Match!');
+    if (hp != payload?.hp) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'HorsePower is not Match!');
     }
 
-    if( modelNumber != payload?.model){
-         throw new AppError(StatusCodes.BAD_REQUEST, 'Jet_Sky Model is not Match!');
+    if (modelNumber != payload?.model) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Jet_Sky Model is not Match!');
     }
     const result = await Rent.create(payload);
     return result
@@ -54,14 +54,33 @@ const getAllRentIntoDB = async () => {
 //Updated Rent
 const updateRentIntoDB = async (id: string, payload: Partial<IRent>) => {
 
-    if (payload?.jet_skyId) {
-        const jet_sky = await JetSky.findById(payload?.jet_skyId);
+    const rent = await Rent.findById(id);
+    if (!rent) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Rent is not Found!');
+    }
 
-        if (!jet_sky) {
-            throw new AppError(StatusCodes.BAD_REQUEST, 'Jet_Sky is not Found!');
+    const jetSky = await JetSky.findById(rent?.jet_skyId);
+    if (!jetSky) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'jetSky is not Found!');
+    }
+
+    const hp = jetSky?.hp
+    const modelNumber = jetSky?.model
+
+    if (payload?.hp) {
+        if (hp != payload?.hp) {
+            throw new AppError(StatusCodes.BAD_REQUEST, 'This JetSky Horsepower has no HorsePower!');
         }
     }
+
+    if (payload?.model) {
+        if (modelNumber != payload?.model) {
+            throw new AppError(StatusCodes.BAD_REQUEST, 'This JetSky Model has no HorsePower!');
+        }
+    }
+
     const result = await Rent.findByIdAndUpdate(id, payload, { new: true });
+
     if (!result) {
         throw new AppError(StatusCodes.BAD_REQUEST, 'Rent is not Found!');
     }

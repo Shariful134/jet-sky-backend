@@ -4,7 +4,7 @@ import { z } from "zod";
 const memberShipCreateSchema = z.object({
   
   body: z.object({
-    duration: z.preprocess(
+    durationInMonths: z.preprocess(
       (val) => Number(val),
       z.number({
         required_error: "Duration is required",
@@ -36,12 +36,12 @@ const memberShipCreateSchema = z.object({
       }).nonnegative("Sign-up fee cannot be negative")
     ),
 
-    pricing: z.preprocess(
+    price: z.preprocess(
       (val) => Number(val),
       z.number({
         required_error: "Pricing is required",
-        invalid_type_error: "Pricing must be a number",
-      }).positive("Pricing must be greater than 0")
+        invalid_type_error: "price must be a number",
+      }).positive("price must be greater than 0")
     ),
 
     description: z
@@ -57,7 +57,7 @@ const memberShipCreateSchema = z.object({
 // Update MemberShip Schema (all fields optional)
 const memberShipUpdateSchema = z.object({
   body: z.object({
-    duration: z.preprocess(
+    durationInMonths: z.preprocess(
       (val) => (val !== undefined ? Number(val) : val),
       z.number().positive("Duration must be greater than 0")
     ).optional(),
@@ -77,9 +77,9 @@ const memberShipUpdateSchema = z.object({
       z.number().nonnegative("Sign-up fee cannot be negative")
     ).optional(),
 
-    pricing: z.preprocess(
+    price: z.preprocess(
       (val) => (val !== undefined ? Number(val) : val),
-      z.number().positive("Pricing must be greater than 0")
+      z.number().positive("price must be greater than 0")
     ).optional(),
 
     description: z.string().trim().optional(),

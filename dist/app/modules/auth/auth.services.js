@@ -21,6 +21,8 @@ const auth_model_1 = require("./auth.model");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const AppError_1 = __importDefault(require("../../../errors/AppError"));
 const config_1 = __importDefault(require("../../../config"));
+const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
+const auth_constant_1 = require("./auth.constant");
 // Register Admin
 const registerAdminIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield auth_model_1.User.isUserExistsByEmail(payload.email);
@@ -28,8 +30,8 @@ const registerAdminIntoDB = (payload) => __awaiter(void 0, void 0, void 0, funct
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Email Already Registered!");
     }
     const result = yield auth_model_1.User.create(Object.assign(Object.assign({}, payload), { role: "Admin" }));
-    const { _id, name, email, phone, country, role, createdAt, updatedAt } = result;
-    return { _id, name, email, phone, country, role, createdAt, updatedAt };
+    const { _id, firstName, lastName, name, email, phone, country, role, createdAt, updatedAt } = result;
+    return { _id, firstName, lastName, name, email, phone, country, role, createdAt, updatedAt };
 });
 // Register Administrator 
 const registerAdministratorIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
@@ -84,14 +86,18 @@ const getSingleUserIntoDB = (id) => __awaiter(void 0, void 0, void 0, function* 
     return result;
 });
 // Get All User with administrator and without admin
-const getAllUserIntoDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield auth_model_1.User.find();
-    const users = result === null || result === void 0 ? void 0 : result.filter((user) => user.role !== "Admin");
+const getAllUserIntoDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = new QueryBuilder_1.default(auth_model_1.User.find(), query).search(auth_constant_1.userSearchableFields)
+        .filter()
+        .sort()
+        .paginate()
+        .fields();
+    const result = user.modelQuery;
     //checking user is exists
-    if (!users) {
+    if (!result) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'User is not Found!');
     }
-    return users;
+    return result;
 });
 // Delete User
 const deleteUserIntoDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
@@ -105,7 +111,6 @@ const deleteUserIntoDB = (id) => __awaiter(void 0, void 0, void 0, function* () 
 //Updated User
 const updateUserIntoDB = (id, payload, req) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield auth_model_1.User.findById(id);
-    console.log(id);
     // checking user is exists
     if (!user) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'User is not Found!');
@@ -119,7 +124,6 @@ const updateUserIntoDB = (id, payload, req) => __awaiter(void 0, void 0, void 0,
         ? authHeader.split(" ")[1]
         : authHeader;
     const findUserEmail = user === null || user === void 0 ? void 0 : user.email;
-    console.log("Token: ", token);
     let decoded;
     try {
         decoded = jsonwebtoken_1.default.verify(token, config_1.default.jwt_access_secret);
@@ -132,8 +136,53 @@ const updateUserIntoDB = (id, payload, req) => __awaiter(void 0, void 0, void 0,
     if ((findUserEmail === null || findUserEmail === void 0 ? void 0 : findUserEmail.toLowerCase().trim()) !== (userEmail === null || userEmail === void 0 ? void 0 : userEmail.toLowerCase().trim())) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'You are Unauthorized!');
     }
-    const result = yield auth_model_1.User.findByIdAndUpdate({ _id: id }, payload, { new: true });
-    return result;
+    if (payload.password) {
+        payload.password = yield bcrypt_1.default.hash(payload.password, Number(config_1.default.bcrypt_salt_rounds));
+    }
+    // update user
+    const updatedUser = yield auth_model_1.User.findByIdAndUpdate(id, payload, { new: true }).select('-password');
+    return updatedUser;
+});
+//Change Pasword
+const changePasswordIntoDB = (id, payload, req) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield auth_model_1.User.findById(id);
+    // checking user is exists
+    if (!user) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'User is not Found!');
+    }
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "Unauthorized - Token missing");
+    }
+    // if token is Bearer then do split 
+    const token = authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : authHeader;
+    const findUserEmail = user === null || user === void 0 ? void 0 : user.email;
+    let decoded;
+    try {
+        decoded = jsonwebtoken_1.default.verify(token, config_1.default.jwt_access_secret);
+    }
+    catch (error) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'Unauthorized');
+    }
+    const { userEmail, role, iat, exp } = decoded;
+    if ((findUserEmail === null || findUserEmail === void 0 ? void 0 : findUserEmail.toLowerCase().trim()) !== (userEmail === null || userEmail === void 0 ? void 0 : userEmail.toLowerCase().trim())) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'You are Unauthorized!');
+    }
+    //checking if the password is correct or uncorrect
+    if (!(yield auth_model_1.User.isPasswordMatched(payload.currentPassword, user === null || user === void 0 ? void 0 : user.password))) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'Password does not match!');
+    }
+    const hashedPassword = yield bcrypt_1.default.hash(payload.newPassword, Number(config_1.default.bcrypt_salt_rounds));
+    // let hashedPassword
+    // if (user.password === payload.newPassword) {
+    //   hashedPassword = await bcrypt.hash(payload.currentPassword, Number(config.bcrypt_salt_rounds));
+    // }
+    // console.log(hashedPassword)
+    // update user
+    const updatedUser = yield auth_model_1.User.findByIdAndUpdate(id, { password: hashedPassword }, { new: true }).select('-password');
+    return updatedUser;
 });
 // forgot password service
 const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* () {
@@ -192,7 +241,8 @@ exports.authServices = {
     deleteUserIntoDB,
     updateUserIntoDB,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    changePasswordIntoDB,
 };
 // // Get Single Administrator
 // const getSingleAdministratorIntoDB = async (email: string) => {

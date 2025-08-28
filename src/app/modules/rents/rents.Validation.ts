@@ -35,7 +35,7 @@ const rentUpdateSchema = z.object({
   body: z.object({
     model: z.string().trim().optional(),
 
-    hp: z.string().refine(
+    hp: z.number().refine(
       (val) => typeof val === "number",
       { message: "hp must be a number, but received string" }
     ).optional(),

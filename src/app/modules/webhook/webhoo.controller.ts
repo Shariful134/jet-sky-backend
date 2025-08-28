@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
+import { Subscription } from "../user/subscription.ts/subscription.Model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! as string, {
-//   apiVersion: "2025-01-27",
+  // apiVersion: "2025-01-27",
 });
 
-// Controller for Stripe Webhook
-export const webhookController = (req: Request, res: Response) => {
+export const webhookController = async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"] as string;
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET! as string;
 
   let event: Stripe.Event;
 
@@ -23,59 +23,125 @@ export const webhookController = (req: Request, res: Response) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        console.log("✅ Checkout completed:", session.id);
-        console.log("Customer: ", session);
+        const userId = session.metadata?.userId;
+        const membershipId = session.metadata?.memberShipPlanId;
 
-        if (session.subscription) {
-          console.log("New subscription created:", session.subscription);
-          // TODO: Save subscription ID to your DB with userId (from metadata / client_reference_id)
+        if (session.subscription && userId && membershipId) {
+          const startDate = new Date();
+          let endDate: Date;
+
+          // Safe endDate calculation
+          try {
+            endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + 1); 
+            if (isNaN(endDate.getTime())) {
+              throw new Error("Invalid endDate");
+            }
+          } catch (error) {
+            console.log("Invalid endDate, using startDate as fallback");
+            endDate = startDate;
+          }
+
+          await Subscription.create({
+            userId,
+            membershipId,
+            type: "recurring",
+            stripeSubscriptionId: session.subscription as string,
+            status: "active",
+            startDate,
+            endDate,
+            signUpFeePaid: false,
+            refundableDepositPaid: false,
+            refundAmount: 0,
+            damagesDeducted: 0,
+          });
+
+          console.log("🎉 Subscription saved in DB");
         }
         break;
       }
 
-      case "customer.subscription.created": {
-        const subscription = event.data.object as Stripe.Subscription;
-        console.log("✅ Subscription created:", subscription.id);
-        console.log(subscription,'subscription');
-        // TODO: Save subscription details in DB
-        break;
-      }
-
+      case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        console.log("🔄 Subscription updated:", subscription.id);
-        console.log(subscription,'subscription');
-        // TODO: Update subscription status/plan in DB
+
+        const startDate =
+          subscription.start_date !== undefined
+            ? new Date(subscription.start_date * 1000)
+            : new Date();
+
+        const currentPeriodEnd = (subscription as any).current_period_end;
+        const endDate =
+          currentPeriodEnd !== undefined
+            ? new Date(currentPeriodEnd * 1000)
+            : new Date();
+
+        if (isNaN(endDate.getTime())) {
+          console.log("Invalid endDate from Stripe, using startDate as fallback");
+        }
+
+        await Subscription.findOneAndUpdate(
+          { stripeSubscriptionId: subscription.id },
+          {
+            status:
+              subscription.status === "active"
+                ? "active"
+                : subscription.status === "canceled"
+                ? "canceled"
+                : "pending",
+            startDate,
+            endDate: isNaN(endDate.getTime()) ? startDate : endDate,
+          },
+          { upsert: true, new: true }
+        );
+
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        console.log("Subscription canceled:", subscription.id);
-        console.log(subscription,'subscription');
-        // TODO: Mark subscription as canceled in DB
+
+        await Subscription.findOneAndUpdate(
+          { stripeSubscriptionId: subscription.id },
+          {
+            status: "canceled",
+            endDate: new Date(),
+          }
+        );
         break;
       }
 
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
-        console.log("💰 Payment succeeded:", invoice.id);
-        console.log(invoice,'invoice');
-        // TODO: Record payment in DB, update user’s subscription status
+
+        if ((invoice as any).subscription) {
+          await Subscription.findOneAndUpdate(
+            { stripeSubscriptionId: (invoice as any).subscription as string },
+            { status: "active" }
+          );
+        }
         break;
       }
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        console.log("⚠️ Payment failed:", invoice.id);
-        console.log(invoice,'invoice');
-        // TODO: Notify user to update payment method
+
+        if ((invoice as any).subscription) {
+          await Subscription.findOneAndUpdate(
+            { stripeSubscriptionId: (invoice as any).subscription as string },
+            { status: "pending" }
+          );
+        }
         break;
       }
 
-      default: {
+      case "payment_intent.succeeded":
+      case "payment_intent.payment_failed":
+        // Optional: log payment intents
+        break;
+
+      default:
         console.log(`ℹ️ Unhandled event type: ${event.type}`);
-      }
     }
 
     res.status(200).json({ received: true });

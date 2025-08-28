@@ -3,12 +3,12 @@ import { IMemberShip } from "./memberShip.interface";
 
 const memberShipSchema = new Schema<IMemberShip>(
   {
-    name: { type: String, required: true }, // e.g., "Weekly Pass", "6-Month Package"
+    name: { type: String, required: false }, // e.g., "Weekly Pass", "6-Month Package"
 
     type: {
       type: String,
       enum: ["recurring", "onetime"],
-      required: true,
+      required: false,
     },
 
     interval: {
