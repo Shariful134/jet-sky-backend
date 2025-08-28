@@ -2,24 +2,17 @@ import { Request, Response } from "express";
 import { paymentServices } from "./payment.service";
 import { StatusCodes } from "http-status-codes";
 import sendResponse from "../../../shared/sendResponse";
+import AppError from "../../../errors/AppError";
 
 const createPaymentCtrl = async (req: Request, res: Response) => {
   try {
-    const { userId, memberShipId } = req.body;
+    const { id } = req.params as { id: string };
+    const { _id } = req.user as unknown as { _id: string };
 
     const result = await paymentServices.createCheckoutSessionCtrl({
-      userId,
-      memberShipId,
+      userId: _id,
+      memberShipId: id,
     });
-
-    if (result.status && result.status !== 200) {
-      sendResponse(res, {
-        statusCode: st,
-        success: false,
-        message: result.message,
-        data: null,
-      });
-    }
 
     sendResponse(res, {
       statusCode: StatusCodes.OK,
@@ -29,6 +22,10 @@ const createPaymentCtrl = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error in createPaymentCtrl:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    new AppError(StatusCodes.INTERNAL_SERVER_ERROR, "Internal server error");
   }
+};
+
+export const paymentController = {
+  createPaymentCtrl,
 };

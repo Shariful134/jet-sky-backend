@@ -1,20 +1,20 @@
-import express, { Application, Request, Response } from 'express';
-import cors from 'cors';
-import cookiePerser from 'cookie-parser';
-import bodyParser from 'body-parser';
-import router from './app/routes';
-import globalErrorHandler from './middlewares/globalErrorhandler';
-import notFound from './middlewares/notFound';
-import path from "path"
-import { stripeWebhook } from './utils/stripeWebhook';
+import express, { Application, Request, Response } from "express";
+import cors from "cors";
+import cookiePerser from "cookie-parser";
+import bodyParser from "body-parser";
+import router from "./app/routes";
+import globalErrorHandler from "./middlewares/globalErrorhandler";
+import notFound from "./middlewares/notFound";
+import path from "path";
+import { stripeWebhook } from "./utils/stripeWebhook";
 
 const app: Application = express();
 
 export const corsOptions = {
-	origin: ["http://localhost:3000", "http://localhost:3001"],
-	methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-	allowedHeaders: ["Content-Type", "Authorization"],
-	credentials: true,
+  origin: ["http://localhost:3000", "http://localhost:3001"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };
 
 //middleware setup
@@ -25,12 +25,16 @@ app.use(cookiePerser());
 // Setup API routes
 app.use("/api/v1", router);
 
-app.post("/webhook", bodyParser.raw({ type: "application/json" }), stripeWebhook);
+app.post(
+  "/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  stripeWebhook
+);
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Jet Sky Server Hello!');
+app.get("/", (req: Request, res: Response) => {
+  res.json("Jet Sky Server Hello!");
 });
 
 // Error Handler
