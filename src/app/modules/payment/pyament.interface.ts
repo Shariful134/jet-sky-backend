@@ -1,24 +1,15 @@
 import { Types } from "mongoose";
 
-export interface ISubscription {
+export interface IPayment {
   _id?: string;
   userId: Types.ObjectId;
-  membershipId: Types.ObjectId;
-
+  adventurePackId?: Types.ObjectId; 
+  ridesNumber?:number;
+  price:number;
+  rentId?: Types.ObjectId; 
   type: "recurring" | "onetime";
-
-  stripeSubscriptionId?: string;
   stripePaymentIntentId?: string;
-
   status: "active" | "pending" | "cancel_requested" | "canceled" | "expired";
-
   startDate: Date;
   endDate: Date;
-
-  signUpFeePaid: boolean;
-  refundableDepositPaid: boolean;
-
-  refundAmount: number;
-  damagesDeducted: number;
-  canceledAt?: Date;
 }

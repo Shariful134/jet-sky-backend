@@ -6,7 +6,16 @@ import { MemberShip } from './memberShip.model';
 
 // create memberShip
 const createMemberShiipIntoDB = async (payload: IMemberShip) => {
-  const result = await MemberShip.create(payload);
+  const duration = payload?.durationInMonths;
+
+  let weekCount = 0;
+  if (duration) {
+    weekCount = Math.round(duration * 4.345);
+  }
+  console.log(weekCount)
+  const payloads = {...payload, weekCount}
+
+  const result = await MemberShip.create(payloads);
   return result
 };
 

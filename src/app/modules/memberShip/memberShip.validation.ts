@@ -11,6 +11,7 @@ const memberShipCreateSchema = z.object({
         invalid_type_error: "Duration must be a number",
       }).positive("Duration must be greater than 0")
     ),
+     weekCount: z.number().optional(),
 
     ridesPerMonth: z.preprocess(
       (val) => Number(val),
@@ -44,6 +45,13 @@ const memberShipCreateSchema = z.object({
       }).positive("price must be greater than 0")
     ),
 
+    planId: z
+      .string({
+        required_error: "planId is required",
+        invalid_type_error: "planId must be a string",
+      })
+      .min(1, "planId cannot be empty")
+      .trim(),
     description: z
       .string({
         required_error: "Description is required",
@@ -61,6 +69,8 @@ const memberShipUpdateSchema = z.object({
       (val) => (val !== undefined ? Number(val) : val),
       z.number().positive("Duration must be greater than 0")
     ).optional(),
+
+    weekCount: z.number().optional(),
 
     ridesPerMonth: z.preprocess(
       (val) => (val !== undefined ? Number(val) : val),
@@ -82,6 +92,7 @@ const memberShipUpdateSchema = z.object({
       z.number().positive("price must be greater than 0")
     ).optional(),
 
+    planId: z.string().trim().optional(),
     description: z.string().trim().optional(),
   }),
 });

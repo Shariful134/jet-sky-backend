@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import { Subscription } from "../user/subscription.ts/subscription.Model";
-import { MemberShip } from "../memberShip/memberShip.model";
+import { Payment } from "../payment/payment.model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! as string, {
   // apiVersion: "2025-01-27",
@@ -24,50 +24,81 @@ export const webhookController = async (req: Request, res: Response) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.metadata?.userId;
-        const membershipId = session.metadata?.memberShipPlanId;
+        console.log(session, "session")
+        break;
+        // const userId = session.metadata?.userId;
+        // const membershipId = session.metadata?.memberShipPlanId;
 
-        if (session.subscription && userId && membershipId) {
+        // if (session.subscription && userId && membershipId) {
+        //   const startDate = new Date();
+        //   let endDate: Date;
 
-          const memberShipData= await MemberShip.findById(membershipId)
+        //   // Safe endDate calculation
+        //   try {
+        //     endDate = new Date(startDate);
+        //     endDate.setMonth(endDate.getMonth() + 1); 
+        //     if (isNaN(endDate.getTime())) {
+        //       throw new Error("Invalid endDate");
+        //     }
+        //   } catch (error) {
+        //     console.log("Invalid endDate, using startDate as fallback");
+        //     endDate = startDate;
+        //   }
 
-          const startDate = new Date();
-          let endDate: Date;
+        //   await Subscription.create({
+        //     userId,
+        //     membershipId,
+        //     type: "recurring",
+        //     stripeSubscriptionId: session.subscription as string,
+        //     status: "active",
+        //     startDate,
+        //     endDate,
+        //     signUpFeePaid: false,
+        //     refundableDepositPaid: false,
+        //     refundAmount: 0,
+        //     damagesDeducted: 0,
+        //   });
 
-          // Safe endDate calculation
-          try {
-            endDate = new Date(startDate);
-            endDate.setMonth(endDate.getMonth() + 1); 
-            if (isNaN(endDate.getTime())) {
-              throw new Error("Invalid endDate");
-            }
-          } catch (error) {
-            console.log("Invalid endDate, using startDate as fallback");
-            endDate = startDate;
-          }
+        //   console.log("🎉 Subscription saved in DB");
+        // }
+      }
 
-          await Subscription.create({
-            userId,
-            membershipId,
+      case "customer.subscription.created": {
+        const subscription = event.data.object as Stripe.Subscription;
+
+        const startDate = subscription.start_date
+          ? new Date(subscription.start_date * 1000)
+          : new Date();
+
+        const endDate = (subscription as any).current_period_end
+          ? new Date((subscription as any).current_period_end * 1000)
+          : new Date();
+
+        await Subscription.findOneAndUpdate(
+          { stripeSubscriptionId: subscription.id },
+          {
+            userId: subscription.metadata?.userId,
+            membershipId: subscription.metadata?.memberShipPlanId,
             type: "recurring",
-            stripeSubscriptionId: session.subscription as string,
+            stripeSubscriptionId: subscription.id,
             status: "active",
             startDate,
             endDate,
-            signUpFeePaid: memberShipData?.signUpFee,
-            refundableDepositPaid: memberShipData?.refundableDeposit,
+            signUpFeePaid: true,   // ✅ signup fee paid
+            refundableDepositPaid: false,
             refundAmount: 0,
             damagesDeducted: 0,
-          });
-
-          console.log("🎉 Subscription saved in DB");
-        }
+          },
+          { upsert: true, new: true }
+        );
+        console.log("🎉 Subscription CREATED & saved in DB");
         break;
       }
-
-      case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
+        //  const userId = session.metadata?.userId;
+        // const membershipId = session.metadata?.memberShipPlanId;
+
 
         const startDate =
           subscription.start_date !== undefined
@@ -91,8 +122,8 @@ export const webhookController = async (req: Request, res: Response) => {
               subscription.status === "active"
                 ? "active"
                 : subscription.status === "canceled"
-                ? "canceled"
-                : "pending",
+                  ? "canceled"
+                  : "pending",
             startDate,
             endDate: isNaN(endDate.getTime()) ? startDate : endDate,
           },
@@ -139,7 +170,36 @@ export const webhookController = async (req: Request, res: Response) => {
         break;
       }
 
-      case "payment_intent.succeeded":
+      case "payment_intent.succeeded": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+
+        const metadata = paymentIntent.metadata || {};
+        // Determine type
+        const type = metadata.adventurePackId || metadata.rentId ? "onetime" : "recurring";
+
+        const startDate = new Date();
+        let endDate = new Date(startDate);
+
+        if (metadata.adventurePackId) {
+          endDate.setMonth(endDate.getMonth() + 24);
+        }
+
+        await Payment.create({
+          userId: metadata.userId,
+          adventurePackId: metadata.adventurePackId || undefined,
+          rentId: metadata.rentId || undefined,
+          type,
+          ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : 1,
+          price: metadata.price ? parseFloat(metadata.price) : 0,
+          stripePaymentIntentId: paymentIntent.id,
+          status: "active",
+          startDate,
+          endDate,
+        });
+        console.log("✅ Payment saved successfully");
+        break;
+      }
+
       case "payment_intent.payment_failed":
         // Optional: log payment intents
         break;

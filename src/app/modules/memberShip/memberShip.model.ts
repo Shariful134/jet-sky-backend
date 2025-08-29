@@ -27,12 +27,14 @@ const memberShipSchema = new Schema<IMemberShip>(
     },
 
     ridesPerMonth: { type: Number, required: true },
+    weekCount: { type: Number, required: false },
 
     refundableDeposit: { type: Number, required: true },
     signUpFee: { type: Number, required: true },
 
     price: { type: Number, required: true }, // 💡 I renamed "pricing" → "price" for clarity
 
+    planId: { type: String, required: true },
     description: { type: String, required: true },
   },
   { timestamps: true }
