@@ -6,6 +6,7 @@ import { adventurePackRoutes } from "../modules/adventurePack/adventurePack.rout
 import { rentRoutes } from "../modules/rents/rent.Routes";
 import { paymentRoute } from "../modules/payment/payment.route";
 import { subscriptionShipRoutes } from "../modules/user/subscription.ts/subscription.Routes";
+import { bookingRoutes } from "../modules/booking/booking.Routes";
 
 
 const router = express.Router();
@@ -38,6 +39,10 @@ const moduleRoutes = [
 	{
 		path: "/subscription",
 		route: subscriptionShipRoutes,
+	},
+	{
+		path: "/booking",
+		route: bookingRoutes,
 	}
 	
 ];

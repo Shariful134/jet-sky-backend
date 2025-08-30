@@ -11,9 +11,14 @@ const bookingSchema = new Schema<IBooking>(
       ref: "User",
       required: true,
     },
-    JetSkyId: {
+    jetSkyId: {
       type: Schema.Types.ObjectId,
       ref: "JetSky",
+      required: false,
+    },
+    adventurePurchaseId: {
+      type: Schema.Types.ObjectId,
+      ref: "PurchaseAdventurePack",
       required: false,
     },
     adventurePackId: {
@@ -21,9 +26,14 @@ const bookingSchema = new Schema<IBooking>(
       ref: "AdventurePack",
       required: false,
     },
-    rentId: {
+    rentPackId: {
       type: Schema.Types.ObjectId,
       ref: "Rent",
+      required: false,
+    },
+    rentPurchaseId: {
+      type: Schema.Types.ObjectId,
+      ref: "PurchaseRentPack",
       required: false,
     },
     paymentId: {
@@ -36,14 +46,19 @@ const bookingSchema = new Schema<IBooking>(
       ref: "Subscription",
       required: false,
     },
-    purchasedCredits: { type: Number, required: true },
-    remainingCredits: { type: Number, required: true },
-    startDate: { type: Date, required: true },
-    expiryDate: { type: Date, required: true },
+    ridesNumber: { type: Number, required: false },
+    purchesCredits: { type: Number, required: false },
+    remainingCredits: { type: Number, required: false },
+    bookingDate:{type:Date, required:false},
+    bookingTime:{type:String, required:false},
+    stripePaymentIntentId:{type:String, required:false},
+    drivingLicense:{type:String, required:false},
+    startDate: { type: Date, required: false },
+    expiryDate: { type: Date, required: false },
     status: {
       type: String,
-      enum: ["active", "expired", "cancelled"],
-      default: "active",
+      enum: ["inActive" ,"active", "expired", "cancelled"],
+      default: "inActive",
     },
     price: {
       type: Number,
@@ -52,10 +67,12 @@ const bookingSchema = new Schema<IBooking>(
     paymentStatus: {
       type: String,
       enum: ["paid", "unpaid"],
-      default: "paid",
+      default: "unpaid",
     },
   },
   { timestamps: true }
 );
 
 export const Booking = model<IBooking>("Booking", bookingSchema);
+export const PurchaseAdventurePack = model<IBooking>("PurchaseAdventurePack", bookingSchema);
+export const PurchaseRentPack = model<IBooking>("PurchaseRentPack", bookingSchema);

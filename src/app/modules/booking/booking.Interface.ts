@@ -3,17 +3,24 @@ import { Types } from "mongoose";
 export interface IBooking {
      _id?: string;
       userId: Types.ObjectId;        
-      JetSkyId?: Types.ObjectId;     
+      jetSkyId?: Types.ObjectId;     
       adventurePackId?: Types.ObjectId; 
-      rentId?: Types.ObjectId; 
+      rentPackId?: Types.ObjectId; 
+      adventurePurchaseId?: Types.ObjectId; 
+      rentPurchaseId?: Types.ObjectId; 
       paymentId?: Types.ObjectId; 
       subscriptionId?: Types.ObjectId; 
-      purchasedCredits: number;
-      remainingCredits: number;
+      ridesNumber?: number;
+      purchesCredits?: number;
+      remainingCredits?: number;
+      bookingDate?:Date;
+      bookingTime?:string;
+      stripePaymentIntentId?:string;
+      drivingLicense?:string;
       startDate: Date;      
-      expiryDate: Date;      
+      expiryDate?: Date;      
       paymentStatus: "paid" | "unpaid";
       price:number;
-      status: "active" | "expired" | "cancelled";
+      status:"inActive" | "active" | "expired" | "cancelled";
       
 }

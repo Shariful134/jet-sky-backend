@@ -6,6 +6,8 @@ import { AdventurePack } from "../adventurePack/adventurePack.model";
 import { StatusCodes } from "http-status-codes";
 import AppError from "../../../errors/AppError";
 import { Rent } from "../rents/rents.model";
+import { JetSky } from "../jet-sky/jet.model";
+import { PurchaseAdventurePack, PurchaseRentPack } from "../booking/booking.Model";
 
 
 
@@ -17,24 +19,21 @@ import { Rent } from "../rents/rents.model";
 
 
 
-
-
-
 const createCheckoutSessionPayment = async (req: Request) => {
   const payload = req.body
-  console.log(payload, 'here more  info add here')
-
-  const productName = payload?.adventurePackId
-    ? "AdventurePack"
-    : payload?.rentId
-    ? "RentalPack"
-    : "Membership Plan";
   
-  const productDescription = payload?.adventurePackId
+
+  const productName = payload?.adventurePurchaseId
+    ? "AdventurePack"
+    : payload?.rentPurchaseId
+    ? "RentalPack"
+    : " JetSky";
+  
+  const productDescription = payload?.adventurePurchaseId
     ? "One-time AdventurePack"
     : payload?.rentId
     ? "One-time RentalPack"
-    : "One-time Membership";
+    : "One-time JetSky";
   
   const priceAmount = payload?.price ? payload.price : "";
   // // 1️⃣ Fetch membership details from DB
@@ -48,44 +47,65 @@ const createCheckoutSessionPayment = async (req: Request) => {
 
   // 2️⃣ Create Stripe Checkout Session
 
-  let adventurePack
-  if (payload?.adventurePackId) {
-    adventurePack = await AdventurePack.findById(payload?.adventurePackId)
+  let purchaseadventure
+  if (payload?.adventurePurchaseId) {
+    purchaseadventure= await PurchaseAdventurePack.findById(payload?.adventurePurchaseId)
 
-    if (!adventurePack) {
-      throw new AppError(StatusCodes.BAD_REQUEST, 'AdventurePack is not Found!');
+    if (!purchaseadventure) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'PurchaseAdventurePack is not Found!');
     }
   }
-
 
   //RentPack
-  let rent
-  if (payload?.rentId) {
-    rent = await Rent.findById(payload?.rentId)
+  let purchaseRent
+  if (payload?.rentPurchaseId) {
+    purchaseRent = await PurchaseRentPack.findById(payload?.rentPurchaseId)
 
-    if (!rent) {
-      throw new AppError(StatusCodes.BAD_REQUEST, 'Rent is not Found!');
+    if (!purchaseRent) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'PurchaseRent is not Found!');
     }
   }
 
+  //jetSkyId
+  let jetSky
+  if (payload?.jetSky) {
+    jetSky = await JetSky.findById(payload?.jetSkyId)
 
+    if (!jetSky) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'jetSky is not Found!');
+    }
+  }
 
+// let bookingId
+// if(payload?.bookingId){
+//   bookingId = payload?.bookingId
+// }
   // Prepare metadata dynamically
   const metadata: Record<string, string> = {
   userId: payload.userId?.toString() || "",
-  bookingType: payload.adventurePackId ? "AdventurePack" : payload.rentId ? "Rent" : "Membership",
-  ridesNumber: payload.ridesNumber?.toString() || "1",
+  bookingType: payload.adventurePurchaseId ? "AdventurePack" : payload.rentPurchaseId ? "RentPack" : "JetSky",
+  productId: payload.adventurePurchaseId ? payload.adventurePurchaseId : payload.rentPurchaseId ? payload.rentPurchaseId  : payload.bookingId ,
+  // bookingId:payload.bookingId ? payload.bookingId.toString() : "",
+  ridesNumber: purchaseadventure?.ridesNumber?.toString() || "1",
   price: payload.price?.toString() || "0",
 };
 
 
   // Only add the ID that exists
-  if (payload.adventurePackId) {
-    metadata.adventurePackId = payload.adventurePackId.toString();
-  } else if (payload.rentId) {
-    metadata.rentId = payload.rentId.toString();
+  if (payload.adventurePurchaseId) {
+    metadata.adventurePurchaseId = payload.adventurePurchaseId.toString();
   }
-  console.log(metadata)
+
+  if (payload.rentPurchaseId) {
+    metadata.rentPurchaseId = payload.rentPurchaseId.toString();
+  }
+
+  if (payload.jetSkyId) {
+    metadata.jetSkyId = payload.jetSkyId.toString();
+  }
+  
+  console.log(payload, 'here more  info add here')
+  console.log(metadata, 'here more  info add here metadata')
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [
@@ -106,6 +126,8 @@ const createCheckoutSessionPayment = async (req: Request) => {
     metadata,
     locale: "en"
   });
+
+  console.log(session, "Check Session=========>>")
 
   return {
     message: "Checkout session created",

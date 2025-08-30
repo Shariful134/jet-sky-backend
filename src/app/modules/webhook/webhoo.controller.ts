@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import { Subscription } from "../user/subscription.ts/subscription.Model";
 import { Payment } from "../payment/payment.model";
+import { Booking, PurchaseAdventurePack, PurchaseRentPack } from "../booking/booking.Model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! as string, {
   // apiVersion: "2025-01-27",
@@ -24,7 +25,7 @@ export const webhookController = async (req: Request, res: Response) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        console.log(session, "session")
+        // console.log(session, "session of WEBSHOOK CONTROLER================>")
         break;
         // const userId = session.metadata?.userId;
         // const membershipId = session.metadata?.memberShipPlanId;
@@ -171,25 +172,110 @@ export const webhookController = async (req: Request, res: Response) => {
       }
 
       case "payment_intent.succeeded": {
+        // const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        // const metadata = paymentIntent.metadata || {};
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        // checkout session থেকে metadata ফেচ করো
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: paymentIntent.id,
+        });
 
-        const metadata = paymentIntent.metadata || {};
+        const session = sessions.data[0];
+        // console.log(session, "session of payment_intent.succeeded WEBSHOOK CONTROLER================>")
         // Determine type
-        const type = metadata.adventurePackId || metadata.rentId ? "onetime" : "recurring";
+        // const type = metadata.adventurePackId || metadata.rentId || metadata.JetSkyId ? "onetime" : "recurring";
+
+        const metadata = session?.metadata || {};
+        const type = metadata.productId ? "onetime" : "recurring";
 
         const startDate = new Date();
         let endDate = new Date(startDate);
 
         if (metadata.adventurePackId) {
           endDate.setMonth(endDate.getMonth() + 24);
+          endDate.setUTCHours(23, 59, 59, 999);
         }
+        console.log(metadata, "metadata===============================>")
+        if (metadata?.bookingType === "JetSky") {
+          await Booking.findByIdAndUpdate(metadata.productId, {
+            // adventurePackId: metadata.adventurePackId || undefined,
+            // ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
+            jetSkyId: metadata.jetSkyId || undefined,
+            type,
+            price: metadata.price ? parseFloat(metadata.price) : 0,
+            stripePaymentIntentId: paymentIntent.id,
+            status: "active",
+            paymentStatus: "paid",
+            startDate,
+          },
+            { new: true })
+        }
+        if (metadata?.bookingType === "AdventurePack") {
 
+          const startDate = new Date();
+          let expiryDate = new Date(startDate);
+
+
+          expiryDate.setMonth(expiryDate.getMonth() + 24);
+          expiryDate.setUTCHours(23, 59, 59, 999);
+
+          await PurchaseAdventurePack.findByIdAndUpdate(metadata.productId, {
+            type,
+            ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
+            price: metadata.price ? parseFloat(metadata.price) : 0,
+            stripePaymentIntentId: paymentIntent.id,
+            status: "active",
+            paymentStatus: "paid",
+            startDate,
+            expiryDate
+          },
+            { new: true })
+        }
+        if (metadata?.bookingType === "RentPack") {
+          await PurchaseRentPack.findByIdAndUpdate(metadata.productId, {
+            type,
+            ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
+            price: metadata.price ? parseFloat(metadata.price) : 0,
+            stripePaymentIntentId: paymentIntent.id,
+            status: "active",
+            paymentStatus: "paid",
+            startDate,
+          },
+            { new: true })
+        }
+        // if(metadata?.bookingType === "RentPack" ){
+        //   await Booking.findByIdAndUpdate(metadata.bookingId, {
+        //   adventurePackId: metadata.adventurePackId || undefined,
+        //   rentId: metadata.productId || undefined,
+        //   type,
+        //   ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
+        //   price: metadata.price ? parseFloat(metadata.price) : 0,
+        //   stripePaymentIntentId: paymentIntent.id,
+        //   status: "active",
+        //   paymentStatus: "paid",
+        //   startDate,
+        // },
+        //   { new: true })
+        // }
+
+        // await Booking.create({
+        //   userId: metadata.userId,
+        //   adventurePackId: metadata.adventurePackId || undefined,
+        //   rentId: metadata.rentId || undefined,
+        //   type,
+        //   ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
+        //   price: metadata.price ? parseFloat(metadata.price) : 0,
+        //   stripePaymentIntentId: paymentIntent.id,
+        //   status: "active",
+        //   startDate,
+        //   endDate,
+        // });
         await Payment.create({
           userId: metadata.userId,
           adventurePackId: metadata.adventurePackId || undefined,
           rentId: metadata.rentId || undefined,
           type,
-          ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : 1,
+          ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
           price: metadata.price ? parseFloat(metadata.price) : 0,
           stripePaymentIntentId: paymentIntent.id,
           status: "active",

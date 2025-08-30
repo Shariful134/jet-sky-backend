@@ -16,6 +16,8 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true },
     introduction: { type: String },
     address: { type: String },
+    purchesCredits: { type: Number ,required: false , default: 0 },
+    remainingCredits: { type: Number ,required: false,  default: 0},
     image: { type: String },
     role: {
       type: String,

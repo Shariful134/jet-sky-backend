@@ -4,14 +4,24 @@ import { IPayment } from "./pyament.interface";
 const paymentSchema = new Schema<IPayment>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    adventurePackId: {
+    adventurePurchaseId: {
       type: Schema.Types.ObjectId,
       ref: "AdventurePack",
       required: false,
     },
-    rentId: {
+    rentPurchaseId: {
       type: Schema.Types.ObjectId,
       ref: "Rent",
+      required: false,
+    },
+    jetSkyId: {
+      type: Schema.Types.ObjectId,
+      ref: "JetSky",
+      required: false,
+    },
+    bookingId: {
+      type: Schema.Types.ObjectId,
+      ref: "Booking",
       required: false,
     },
     type: {

@@ -1,25 +1,22 @@
 import { Types } from "mongoose";
 
-// export interface IbookingAdventurePack {
-// adventurePackId: Types.ObjectId;
-// userId: Types.ObjectId;
-// ridesNumber:number;
-// ridesPricing:number;
-// startDate:Date;
-// expireDate:Date;
-// rideComplete:number;
-// rideRemaining:number;
-// }
-
-export interface IbookingAdventurePack {
-  _id?: string;
-  userId: Types.ObjectId;        // Ref to User
-  jet_skyId: Types.ObjectId;     // Ref to JetSky
-  adventurePackId: Types.ObjectId; // Ref to AdventurePack
-  purchasedCredits: number;
-  remainingCredits: number;
-  startDate: Date;      // auto calculate 24 months
-  expiryDate: Date;      // auto calculate 24 months
-  paymentStatus: "paid" | "unpaid";
-  status: "active" | "expired" | "cancelled";
+export interface IBooking {
+     _id?: string;
+      userId: Types.ObjectId;        
+      jetSkyId?: Types.ObjectId;     
+      adventurePackId?: Types.ObjectId; 
+      paymentId?: Types.ObjectId; 
+      subscriptionId?: Types.ObjectId; 
+      purchesCredits: number;
+      remainingCredits: number;
+      bookingDate?:Date;
+      bookingTime?:string;
+      stripePaymentIntentId?:string;
+      drivingLicense?:string;
+      startDate: Date;      
+      expiryDate?: Date;      
+      paymentStatus: "paid" | "unpaid";
+      price:number;
+      status:"inActive" | "active" | "expired" | "cancelled";
+      
 }

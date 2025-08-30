@@ -15,6 +15,8 @@ export interface IUser {
   introduction?:string;
   address?:string;
   image?:string;
+  purchesCredits?:number
+  remainingCredits?:number
   resetPasswordOtp?: string;
   resetPasswordExpiry?: Date;
   createdAt: string;
