@@ -51,6 +51,7 @@ const bookingSchema = new Schema<IBooking>(
     remainingCredits: { type: Number, required: false },
     bookingDate:{type:Date, required:false},
     bookingTime:{type:String, required:false},
+    type:{type:String, required:false},
     stripePaymentIntentId:{type:String, required:false},
     drivingLicense:{type:String, required:false},
     startDate: { type: Date, required: false },

@@ -42,15 +42,6 @@ const objectId = z
   body: z.object({
     userId: objectId,
     jetSkyId: objectId.optional(),
-    price: z.preprocess(
-      (val) => Number(val),
-      z
-        .number({
-          required_error: "Price is required",
-          invalid_type_error: "Price must be a number",
-        })
-        .positive("Price must be greater than 0")
-    ),
   }),
 });
 

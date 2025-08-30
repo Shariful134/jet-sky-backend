@@ -13,11 +13,17 @@ router.post(
 	BookingContnrollers.createBookingJetSky
 );
 
-// create BookingJetSky
+// purches adventurePack
 router.post(
 	"/purchase/adventurePack", auth("Admin", "Administrator", "User"),
 	// validateRequest(BookingValidation.jetSkyBookingValidation),
 	BookingContnrollers.purchaseAdventurePack
+);
+// create booking RentPack
+router.post(
+	"/create/rentPack", auth("Admin", "Administrator", "User"),
+	// validateRequest(BookingValidation.jetSkyBookingValidation),
+	BookingContnrollers.purchaseRentPack
 );
 
 // // getSingle AdventurePack

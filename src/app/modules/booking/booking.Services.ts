@@ -58,7 +58,6 @@ const createBookingJetSkyIntoDB = async (
     }
 
 
-
     // 3. Credit Check
     if (userData?.purchesCredits) {
         if (!userData?.remainingCredits || userData?.remainingCredits < 1) {
@@ -72,10 +71,12 @@ const createBookingJetSkyIntoDB = async (
     }
 
 
+    const payloads = {...payload, price:jetSkyData?.price}
+
     const result = await Booking.create({
-        ...payload,
+        ...payloads,
         remainingCredits: userData.remainingCredits ?? userData.purchesCredits,
-        purchesCredits: userData.purchesCredits ?? 0,
+        purchesCredits: 1,
         // status: 'active',
         // paymentStatus: 'paid',
     });
@@ -116,17 +117,16 @@ const purchasegAdventurePackIntoDB = async (
     return result;
 };
 
-// purchaseAdventurePack
+// purchaseRentPack
 const purchasegRentPackIntoDB = async (
     payload: Partial<IBooking>,
 
 ) => {
 
     const userData = await User.findById(payload?.userId);
-    const rentPackData = await Rent.findById(payload?.rentPackId)
-    console.log("payload :", payload)
-    console.log("adventurePackData :", rentPackData)
-
+    const rentPackData = await Rent.findById(payload?.rentPackId).populate("jet_skyId")
+    
+    
     if (!rentPackData) {
         throw new AppError(StatusCodes.BAD_REQUEST, 'RentPackId not found!');
     }
@@ -136,11 +136,43 @@ const purchasegRentPackIntoDB = async (
     }
 
 
-    //create credit when user parches a adventurePack
-    const result = await PurchaseAdventurePack.create({
-        ...payload,
-        purchesCredits: payload?.ridesNumber,
-        remainingCredits: payload?.ridesNumber,
+    const totalJetSkiesOfModel = await JetSky.countDocuments({ model: rentPackData?.model });
+
+    const bookedCount = await Booking.countDocuments({
+        bookingDate: payload.bookingDate,
+        jetSkyId: { $in: (await JetSky.find({ model: rentPackData?.model })).map(j => j._id) }
+    });
+    console.log("totalJetSkiesOfModel: ",totalJetSkiesOfModel)
+    console.log("bookedCount: ",bookedCount)
+
+    if (bookedCount >= totalJetSkiesOfModel) {
+        throw new AppError(
+            StatusCodes.CONFLICT,
+            `Sorry, all ${rentPackData?.model} RentPack are already booked for this date!`
+        );
+    }
+
+
+    // 3. Credit Check
+    if (userData?.purchesCredits) {
+        if (!userData?.remainingCredits || userData?.remainingCredits < 1) {
+            throw new AppError(
+                StatusCodes.BAD_REQUEST,
+                'You do not have enough credits to make this booking!'
+            );
+        }
+        userData.remainingCredits -= 1;
+        await userData.save();
+    }
+
+    const payloads = {...payload, price:rentPackData?.price, jetSkyId:rentPackData?.jet_skyId?._id}
+    // console.log("payloads: ",payloads)
+
+    // create credit when user parches a adventurePack
+    const result = await Booking.create({
+        ...payloads,
+        remainingCredits: userData.remainingCredits ?? userData.purchesCredits,
+        purchesCredits: 1,
         status: 'inActive',
         paymentStatus: 'unpaid',
     });

@@ -15,6 +15,7 @@ export interface IBooking {
       remainingCredits?: number;
       bookingDate?:Date;
       bookingTime?:string;
+      type?:string;
       stripePaymentIntentId?:string;
       drivingLicense?:string;
       startDate: Date;      

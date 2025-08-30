@@ -7,7 +7,7 @@ import { StatusCodes } from "http-status-codes";
 import AppError from "../../../errors/AppError";
 import { Rent } from "../rents/rents.model";
 import { JetSky } from "../jet-sky/jet.model";
-import { PurchaseAdventurePack, PurchaseRentPack } from "../booking/booking.Model";
+import { Booking, PurchaseAdventurePack, PurchaseRentPack } from "../booking/booking.Model";
 
 
 
@@ -35,7 +35,7 @@ const createCheckoutSessionPayment = async (req: Request) => {
     ? "One-time RentalPack"
     : "One-time JetSky";
   
-  const priceAmount = payload?.price ? payload.price : "";
+  
   // // 1️⃣ Fetch membership details from DB
   // const memberShip = await memberShipServices.getSingleMemberShipIntoDB(
   //   memberShipId
@@ -59,7 +59,7 @@ const createCheckoutSessionPayment = async (req: Request) => {
   //RentPack
   let purchaseRent
   if (payload?.rentPurchaseId) {
-    purchaseRent = await PurchaseRentPack.findById(payload?.rentPurchaseId)
+    purchaseRent = await Booking.findById(payload?.rentPurchaseId).populate("jetSkyId")
 
     if (!purchaseRent) {
       throw new AppError(StatusCodes.BAD_REQUEST, 'PurchaseRent is not Found!');
@@ -75,7 +75,8 @@ const createCheckoutSessionPayment = async (req: Request) => {
       throw new AppError(StatusCodes.BAD_REQUEST, 'jetSky is not Found!');
     }
   }
-
+const priceAmount = purchaseRent?.price.toString() || "0";
+  console.log("purchaseRent: ",purchaseRent)
 // let bookingId
 // if(payload?.bookingId){
 //   bookingId = payload?.bookingId
@@ -84,10 +85,10 @@ const createCheckoutSessionPayment = async (req: Request) => {
   const metadata: Record<string, string> = {
   userId: payload.userId?.toString() || "",
   bookingType: payload.adventurePurchaseId ? "AdventurePack" : payload.rentPurchaseId ? "RentPack" : "JetSky",
-  productId: payload.adventurePurchaseId ? payload.adventurePurchaseId : payload.rentPurchaseId ? payload.rentPurchaseId  : payload.bookingId ,
-  // bookingId:payload.bookingId ? payload.bookingId.toString() : "",
+  adventurePurchaseId: payload.adventurePurchaseId ? payload.adventurePurchaseId : "",
+  bookingId:payload.bookingId ? payload.bookingId.toString() : payload.rentPurchaseId ? payload.rentPurchaseId.toString() : "",
   ridesNumber: purchaseadventure?.ridesNumber?.toString() || "1",
-  price: payload.price?.toString() || "0",
+  price: purchaseRent?.price.toString() || "0",
 };
 
 

@@ -37,8 +37,22 @@ const purchaseAdventurePack = catchAsync(async (req, res) => {
     });
 
 });
+//create booking RentPack
+const purchaseRentPack = catchAsync(async (req, res) => {
+    const payload= req.body;
+    console.log(payload)
+    const result = await BookingServices.purchasegRentPackIntoDB(payload);
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: 'Rent Purchase Successfully',
+        data: [result],
+    });
+
+});
 
 export const BookingContnrollers = {
     createBookingJetSky,
-    purchaseAdventurePack
+    purchaseAdventurePack,
+    purchaseRentPack
 }

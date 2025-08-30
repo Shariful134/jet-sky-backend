@@ -186,7 +186,7 @@ export const webhookController = async (req: Request, res: Response) => {
         // const type = metadata.adventurePackId || metadata.rentId || metadata.JetSkyId ? "onetime" : "recurring";
 
         const metadata = session?.metadata || {};
-        const type = metadata.productId ? "onetime" : "recurring";
+        const type = metadata.productId || metadata.bookingId ? "onetime" : "recurring";
 
         const startDate = new Date();
         let endDate = new Date(startDate);
@@ -197,11 +197,23 @@ export const webhookController = async (req: Request, res: Response) => {
         }
         console.log(metadata, "metadata===============================>")
         if (metadata?.bookingType === "JetSky") {
-          await Booking.findByIdAndUpdate(metadata.productId, {
+          await Booking.findByIdAndUpdate(metadata.bookingId, {
             // adventurePackId: metadata.adventurePackId || undefined,
             // ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
             jetSkyId: metadata.jetSkyId || undefined,
             type,
+            price: metadata.price ? parseFloat(metadata.price) : 0,
+            stripePaymentIntentId: paymentIntent.id,
+            status: "active",
+            paymentStatus: "paid",
+            startDate,
+          },
+            { new: true })
+        }
+        if (metadata?.bookingType === "RentPack") {
+          await Booking.findByIdAndUpdate(metadata.bookingId, {
+            type,
+            ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
             price: metadata.price ? parseFloat(metadata.price) : 0,
             stripePaymentIntentId: paymentIntent.id,
             status: "active",
@@ -231,18 +243,7 @@ export const webhookController = async (req: Request, res: Response) => {
           },
             { new: true })
         }
-        if (metadata?.bookingType === "RentPack") {
-          await PurchaseRentPack.findByIdAndUpdate(metadata.productId, {
-            type,
-            ridesNumber: metadata.ridesNumber ? parseInt(metadata.ridesNumber) : undefined,
-            price: metadata.price ? parseFloat(metadata.price) : 0,
-            stripePaymentIntentId: paymentIntent.id,
-            status: "active",
-            paymentStatus: "paid",
-            startDate,
-          },
-            { new: true })
-        }
+        
         // if(metadata?.bookingType === "RentPack" ){
         //   await Booking.findByIdAndUpdate(metadata.bookingId, {
         //   adventurePackId: metadata.adventurePackId || undefined,
